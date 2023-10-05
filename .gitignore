@@ -3,3 +3,6 @@
 
 # editors
 .cache/
+
+# executables
+*.exe
