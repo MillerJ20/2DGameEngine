@@ -4,5 +4,7 @@
 # editors
 .cache/
 
-# executables
-*.exe
+# Executables
+*.exe 
+*.out
+*.app
