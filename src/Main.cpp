@@ -11,6 +11,6 @@ int main() {
   SDL_Init(SDL_INIT_EVERYTHING);
   sol::state lua;
   lua.open_libraries(sol::lib::base);
-  std::cout << "Hello, world!" << std::endl;
+  std::cout << "Hello, world! And Github" << std::endl;
   return 0;
 }
