@@ -6,6 +6,7 @@
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
+#include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
 #include <glm/glm.hpp>
 #include <iostream>
@@ -46,12 +47,13 @@ void Game::Initialize() {
 
   isRunning = true;
 }
+
 glm::vec2 playerPosition;
 glm::vec2 playerVelocity;
 
 void Game::Setup() {
   playerPosition = glm::vec2(10.0, 20.0);
-  playerVelocity = glm::vec2(1.0, 0);
+  playerVelocity = glm::vec2(50.0, 35.0);
 }
 
 void Game::Run() {
@@ -80,18 +82,27 @@ void Game::ProcessInput() {
 }
 
 void Game::Update() {
-  while (!SDL_TICKS_PASSED(SDL_GetTicks(),
-                           msPreviousFrame + MILLISECONDS_PER_FRAME))
-    ;
+  // Only perform updates once per frame, wait if previous frame finished
+  // quickly (This caps the framerate)
+  int timeToWait = MILLISECONDS_PER_FRAME - (SDL_GetTicks() - msPreviousFrame);
+  if (timeToWait > 0 && timeToWait <= MILLISECONDS_PER_FRAME) {
+    SDL_Delay(timeToWait);
+  }
 
+  // Calculate the difference in time that has passed since last frame converted
+  // to seconds
+  double deltaTime = (SDL_GetTicks() - msPreviousFrame) / 1000.0;
+
+  // Store preiove frame time
   msPreviousFrame = SDL_GetTicks();
 
-  playerPosition.x += playerVelocity.x;
-  playerPosition.y += playerVelocity.y;
+  playerPosition.x += playerVelocity.x * deltaTime;
+  playerPosition.y += playerVelocity.y * deltaTime;
 }
 
 void Game::Render() {
   SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
+  msPreviousFrame = SDL_GetTicks();
   SDL_RenderClear(renderer);
 
   // Draw a PNG texture
@@ -99,8 +110,10 @@ void Game::Render() {
   SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
   SDL_FreeSurface(surface);
 
+  // Define destination rectangle that we want to place our texture on
   SDL_Rect dstRect = {static_cast<int>(playerPosition.x),
                       static_cast<int>(playerVelocity.y), 32, 32};
+  msPreviousFrame = SDL_GetTicks();
 
   SDL_RenderCopy(renderer, texture, NULL, &dstRect);
   SDL_DestroyTexture(texture);
