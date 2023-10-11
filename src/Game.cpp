@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "Logger.h"
 #include "glm/fwd.hpp"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
@@ -13,14 +14,14 @@
 
 Game::Game() {
   isRunning = false;
-  std::cout << "Game Constructor called!" << std::endl;
+  Logger::Log("Game Constructor Called!");
 }
 
-Game::~Game() { std::cout << "Game destructor called!" << std::endl; }
+Game::~Game() { Logger::Log("Game destructor called!"); }
 
 void Game::Initialize() {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-    std::cerr << "Error initializing SDL." << std::endl;
+    Logger::Err("Error initializing SDL.");
     return;
   }
 
