@@ -20,5 +20,5 @@ void Logger::Log(const std::string &message) {
 
 void Logger::Err(const std::string &message) {
   string output = "LOG: [" + getDateTimeString() + "] " + message;
-  cerr << "\x1B[32m" << output << "\033[0m" << endl;
+  cerr << "\x1B[91m" << output << "\033[0m" << endl;
 }
