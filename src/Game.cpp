@@ -14,7 +14,7 @@
 
 Game::Game() {
   isRunning = false;
-  Logger::Log("Game Constructor Called!");
+  Logger::Log("Game constructor Called!");
 }
 
 Game::~Game() { Logger::Log("Game destructor called!"); }
