@@ -1,15 +1,24 @@
 #include "Logger.h"
+#include <chrono>
+#include <ctime>
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+std::string getDateTimeString() {
+  time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+  string output(30, '\0');
+  strftime(&output[0], output.size(), "%d-%b-%Y %H:%M:%S", localtime(&now));
+  return output;
+}
 
 void Logger::Log(const std::string &message) {
-  // TODO: Implement Log method
-  // Print the mesasage in the console:
-  // LOG: [ 12/Oct/2023 ] - {Message Goes Here}
-  // This should be displayed in white
+  string output = "LOG: [" + getDateTimeString() + "] " + message;
+  cout << "\x1B[32m" << output << "\033[0m" << endl;
 }
 
 void Logger::Err(const std::string &message) {
-  // TODO: Implement Err method
-  // Print the mesasage in the console:
-  // Err: [ 12/Oct/2023 ] - {Message Goes Here}
-  // This should be displayed in red
+  string output = "LOG: [" + getDateTimeString() + "] " + message;
+  cerr << "\x1B[32m" << output << "\033[0m" << endl;
 }
