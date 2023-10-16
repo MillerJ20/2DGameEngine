@@ -3,6 +3,9 @@
 #include <ctime>
 #include <iostream>
 #include <string>
+#include <vector>
+
+std::vector<LogEntry> Logger::messages;
 
 using namespace std;
 
@@ -14,11 +17,23 @@ std::string getDateTimeString() {
 }
 
 void Logger::Log(const std::string &message) {
-  string output = "LOG: [" + getDateTimeString() + "] " + message;
-  cout << "\x1B[32m" << output << "\033[0m" << endl;
+  LogEntry logEntry;
+
+  logEntry.type = LOG_INFO;
+  logEntry.message = "LOG: [" + getDateTimeString() + "] " + message;
+
+  cout << "\x1B[32m" << logEntry.message << "\033[0m" << endl;
+
+  messages.push_back(logEntry);
 }
 
 void Logger::Err(const std::string &message) {
-  string output = "LOG: [" + getDateTimeString() + "] " + message;
-  cerr << "\x1B[91m" << output << "\033[0m" << endl;
+  LogEntry logEntry;
+
+  logEntry.type = LOG_ERROR;
+  logEntry.message = "LOG: [" + getDateTimeString() + "] " + message;
+
+  cerr << "\x1B[91m" << logEntry.message << "\033[0m" << endl;
+
+  messages.push_back(logEntry);
 }
