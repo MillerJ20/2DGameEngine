@@ -1,17 +1,19 @@
 #ifndef ECS_H
 #define ECS_H
+
 #include <bitset>
 #include <vector>
 
 const unsigned int MAX_COMPONENTS = 32;
 typedef std::bitset<MAX_COMPONENTS> Signature;
 
-class BaseComponent {
-protected:
+struct BaseComponent {
+ protected:
   static int nextId;
 };
 
-template <typename TComponent> class Component : public BaseComponent {
+template <typename TComponent>
+class Component : public BaseComponent {
   static int GetId() {
     static auto id = nextId++;
     return id;
@@ -19,20 +21,20 @@ template <typename TComponent> class Component : public BaseComponent {
 };
 
 class Entity {
-private:
+ private:
   int id;
 
-public:
+ public:
   Entity(int id) : id(id){};
   int GetId() const;
 };
 
 class System {
-private:
+ private:
   Signature componentSignature;
   std::vector<Entity> entities;
 
-public:
+ public:
   System() = default;
   ~System() = default;
 
@@ -40,14 +42,16 @@ public:
   void RemoveEntityFromSystem(Entity entity);
 
   std::vector<Entity> GetAllSystemEntities() const;
-  Signature &GetComponentSignature() const;
+  const Signature &GetComponentSignature() const;
 
-  template <typename TComponent> void RequireComponent();
+  template <typename TComponent>
+  void RequireComponent();
 };
 
 class Registry {};
 
-template <typename TComponent> void System::RequireComponent() {
+template <typename TComponent>
+void System::RequireComponent() {
   const auto componentId = Component<TComponent>::GetId();
   componentSignature.set(componentId);
 }

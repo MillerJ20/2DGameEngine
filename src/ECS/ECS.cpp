@@ -1,18 +1,21 @@
 #include "ECS.h"
 
+#include <algorithm>
+
 int Entity::GetId() const { return id; }
 
-void AddEntityToSystem(Entity entity) {
-  // TODO: Add the passed in Entity to this system
+void System::AddEntityToSystem(Entity entity) { entities.push_back(entity); }
+
+void System::RemoveEntityFromSystem(Entity entity) {
+  for (int i = 0; i < entities.size(); i++) {
+    if (entities[i].GetId() == entity.GetId()) {
+      entities.erase(entities.begin() + i);
+    }
+  }
 }
 
-void RemoveEntityFromSystem(Entity entity) {
-  // TODO: Remove the passed in entity from this system
-}
+std::vector<Entity> System::GetAllSystemEntities() const { return entities; }
 
-std::vector<Entity> GetAllSystemEntities() {
-  // TODO: Return all of the entities that this system is applying to
-}
-Signature &GetComponentSignature() {
-  // TODO: Return the Signature for a component
+const Signature &System::GetComponentSignature() const {
+  return componentSignature;
 }
