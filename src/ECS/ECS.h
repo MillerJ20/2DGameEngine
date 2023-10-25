@@ -113,7 +113,7 @@ public:
   void KillEntity(Entity entity);
 
   // System Methods
-  template <typename TSystem> void AddSystem(System* systemToAdd);
+  template <typename TSystem> void AddSystem();
   template <typename TSystem> void RemoveSystem();
   bool HasSystem();
   void GetSystem();
@@ -192,12 +192,14 @@ template <typename T> bool Registry::HasComponent(Entity entity) const {
   return entityComponentSignature[entityId].test(componentId);
 }
 
-template <typename TSystem> void Registry::AddSystem(System* systemToAdd) {
+template <typename TSystem> void Registry::AddSystem() {
   std::string typeNameStr = std::string(typeid(TSystem).name());
   std::type_index systemTypeKey = std::type_index(typeid(TSystem));
 
   if (!systems[systemTypeKey]) {
-    systems.insert({systemTypeKey, systemToAdd});
+    // TODO: Instantiate the proper System using TArgs based on TSystem, then
+    // insert
+    // systems.insert({systemTypeKey, systemToAdd});
 
     Logger::Log("Added a system of type: " + typeNameStr);
 
