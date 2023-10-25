@@ -113,9 +113,9 @@ public:
   void KillEntity(Entity entity);
 
   // System Methods
-  void AddSystem();
-  void RemoveSystem();
-  void HasSystem();
+  template <typename TSystem> void AddSystem(System* systemToAdd);
+  template <typename TSystem> void RemoveSystem();
+  bool HasSystem();
   void GetSystem();
   void AddEntityToSystem(Entity entity);
 
@@ -124,7 +124,6 @@ public:
   void AddComponent(Entity entity, TArgs&&... args);
   template <typename T> void RemoveComponent(Entity entity);
   template <typename T> bool HasComponent(Entity entity) const;
-  void GetComponent();
 };
 
 // Template functions
@@ -191,6 +190,40 @@ template <typename T> bool Registry::HasComponent(Entity entity) const {
   const auto entityId = entity.GetId();
 
   return entityComponentSignature[entityId].test(componentId);
+}
+
+template <typename TSystem> void Registry::AddSystem(System* systemToAdd) {
+  std::string typeNameStr = std::string(typeid(TSystem).name());
+  std::type_index systemTypeKey = std::type_index(typeid(TSystem));
+
+  if (!systems[systemTypeKey]) {
+    systems.insert({systemTypeKey, systemToAdd});
+
+    Logger::Log("Added a system of type: " + typeNameStr);
+
+    return;
+  }
+
+  Logger::Err("Tried to add a system of type: " + typeNameStr +
+              "that already exists!");
+  return;
+}
+
+template <typename TSystem> void Registry::RemoveSystem() {
+  std::string typeNameStr = std::string(typeid(TSystem).name());
+  std::type_index systemTypeKey = std::type_index(typeid(TSystem));
+
+  if (!systems[systemTypeKey]) {
+    Logger::Err("Tried to remove a system of type: " + typeNameStr +
+                "that doesnt't exist!");
+    return;
+  }
+
+  systems.erase(systemTypeKey);
+
+  Logger::Log("Successfully removed system of type: " + typeNameStr);
+
+  return;
 }
 
 #endif
