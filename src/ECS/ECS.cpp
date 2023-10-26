@@ -8,6 +8,8 @@
 // ENTITY METHODS
 int Entity::GetId() const { return id; }
 
+int BaseComponent::nextId = 0;
+
 // SYSTEM METHODS
 void System::AddEntityToSystem(Entity entity) { entities.push_back(entity); }
 
@@ -38,4 +40,20 @@ Entity Registry::CreateEntity() {
   Logger::Log("Entity created with ID: " + std::to_string(entityId));
 
   return entityToCreate;
+}
+
+void Registry::AddEntityToSystem(Entity entity) {
+  const auto entityId = entity.GetId();
+  const auto entitySignature = entityComponentSignature[entityId];
+
+  for (auto& system : systems) {
+    const auto& systemSignature = system.second->GetComponentSignature();
+
+    bool signaturesMatch =
+        (entitySignature & systemSignature) == systemSignature;
+
+    if (signaturesMatch) {
+      system.second->AddEntityToSystem(entity);
+    }
+  }
 }

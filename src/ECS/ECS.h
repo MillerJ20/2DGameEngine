@@ -9,6 +9,7 @@
 #include <strings.h>
 #include <typeindex>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 const unsigned int MAX_COMPONENTS = 32;
@@ -113,10 +114,11 @@ public:
   void KillEntity(Entity entity);
 
   // System Methods
-  template <typename TSystem> void AddSystem();
+  template <typename TSystem, typename... TArgs>
+  void AddSystem(TArgs&&... args);
   template <typename TSystem> void RemoveSystem();
-  bool HasSystem();
-  void GetSystem();
+  template <typename TSystem> bool HasSystem() const;
+  template <typename TSystem> TSystem& GetSystem() const;
   void AddEntityToSystem(Entity entity);
 
   // Component Methods
@@ -126,7 +128,7 @@ public:
   template <typename T> bool HasComponent(Entity entity) const;
 };
 
-// Template functions
+// Component Templates
 template <typename TComponent> void System::RequireComponent() {
   const auto componentId = Component<TComponent>::GetId();
   componentSignature.set(componentId);
@@ -192,14 +194,16 @@ template <typename T> bool Registry::HasComponent(Entity entity) const {
   return entityComponentSignature[entityId].test(componentId);
 }
 
-template <typename TSystem> void Registry::AddSystem() {
+// System Template Functions
+template <typename TSystem, typename... TArgs>
+void Registry::AddSystem(TArgs&&... args) {
   std::string typeNameStr = std::string(typeid(TSystem).name());
   std::type_index systemTypeKey = std::type_index(typeid(TSystem));
 
   if (!systems[systemTypeKey]) {
-    // TODO: Instantiate the proper System using TArgs based on TSystem, then
-    // insert
-    // systems.insert({systemTypeKey, systemToAdd});
+    TSystem* newSystem(new TSystem(std::forward<TArgs>(args)...));
+
+    systems.insert(std::make_pair(systemTypeKey, newSystem));
 
     Logger::Log("Added a system of type: " + typeNameStr);
 
@@ -220,12 +224,31 @@ template <typename TSystem> void Registry::RemoveSystem() {
                 "that doesnt't exist!");
     return;
   }
-
+  // TODO: Verify that you do NOT need to use systems.find() before calling
+  // erase
   systems.erase(systemTypeKey);
 
   Logger::Log("Successfully removed system of type: " + typeNameStr);
 
   return;
+}
+
+template <typename TSystem> bool Registry::HasSystem() const {
+  std::type_index systemTypeKey = std::type_index(typeid(TSystem));
+
+  return systems.find(systemTypeKey) != systems.end();
+}
+
+template <typename TSystem> TSystem& Registry::GetSystem() const {
+  std::type_index systemTypeKey = std::type_index(typeid(TSystem));
+  auto systemIterator = systems.find(systemTypeKey);
+  std::string typeNameStr = std::string(typeid(TSystem).name());
+
+  if (systemIterator != systems.end()) {
+    return systems.at(systemTypeKey);
+  }
+
+  Logger::Err("The system at key of: " + typeNameStr + "does not exist!");
 }
 
 #endif
