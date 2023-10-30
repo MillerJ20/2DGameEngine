@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "../ECS/ECS.h"
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 
@@ -11,8 +12,10 @@ class Game {
 private:
   bool isRunning;
   int msPreviousFrame = 0;
-  SDL_Window *window;
-  SDL_Renderer *renderer;
+  SDL_Window* window;
+  SDL_Renderer* renderer;
+
+  Registry* registry;
 
 public:
   Game();
