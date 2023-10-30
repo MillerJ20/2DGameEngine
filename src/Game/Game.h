@@ -4,6 +4,7 @@
 #include "../ECS/ECS.h"
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
+#include <memory>
 
 const int FPS = 60;
 const int MILLISECONDS_PER_FRAME = 1000 / FPS;
@@ -15,7 +16,7 @@ private:
   SDL_Window* window;
   SDL_Renderer* renderer;
 
-  Registry* registry;
+  std::unique_ptr<Registry> registry;
 
 public:
   Game();
