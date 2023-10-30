@@ -37,6 +37,11 @@ private:
 public:
   Entity(int id) : id(id){};
   int GetId() const;
+  Entity& operator=(const Entity& other) = default;
+  bool operator==(const Entity& other) const { return id == other.id; }
+  bool operator!=(const Entity& other) const { return id != other.id; }
+  bool operator>(const Entity& other) const { return id > other.id; }
+  bool operator<(const Entity& other) const { return id < other.id; }
 };
 
 // System class to perform logic on data in components
