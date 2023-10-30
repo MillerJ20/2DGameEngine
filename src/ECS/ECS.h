@@ -4,6 +4,7 @@
 #include "../Logger/Logger.h"
 #include <bitset>
 #include <cwchar>
+#include <memory>
 #include <set>
 #include <string>
 #include <strings.h>
@@ -96,7 +97,7 @@ private:
 
   // Each pool contains data for a certain component type
   // [vector index = componentId], [pool index = entityId]
-  std::vector<TPool*> componentPools;
+  std::vector<std::shared_ptr<TPool>> componentPools;
 
   // Signatures tell which components are active for an entity
   // [vector index = entity id]
@@ -104,14 +105,14 @@ private:
 
   // Map of active systems
   // [index = system typeid]
-  std::unordered_map<std::type_index, System*> systems;
+  std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
 
   std::set<Entity> entitiesToBeAdded;
   std::set<Entity> entitiesToBeDeleted;
 
 public:
-  Registry() = default;
-
+  Registry() { Logger::Log("Registry constructor called!"); }
+  ~Registry() { Logger::Log("Registry destructor called"); }
   void Update();
 
   // Entity Methods
@@ -149,11 +150,12 @@ void Registry::AddComponent(Entity entity, TArgs&&... args) {
   }
 
   if (!componentPools[componentId]) {
-    Pool<T>* newComponentPool = new Pool<T>();
+    std::shared_ptr<Pool<T>> newComponentPool = std::make_shared<Pool<T>>();
     componentPools[componentId] = newComponentPool;
   }
 
-  Pool<T>* currentPool = componentPools[componentId];
+  std::shared_ptr<Pool<T>> currentPool =
+      std::static_pointer_cast(componentPools[componentId]);
 
   if (entityId > currentPool->GetSize()) {
     currentPool->Resize(numEntities);
@@ -206,7 +208,8 @@ void Registry::AddSystem(TArgs&&... args) {
   std::type_index systemTypeKey = std::type_index(typeid(TSystem));
 
   if (!systems[systemTypeKey]) {
-    TSystem* newSystem(new TSystem(std::forward<TArgs>(args)...));
+    std::shared_ptr<TSystem> newSystem =
+        std::make_shared<TSystem>(std::forward<TArgs>(args)...);
 
     systems.insert(std::make_pair(systemTypeKey, newSystem));
 

@@ -12,10 +12,11 @@
 #include <SDL2/SDL_video.h>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <memory>
 
 Game::Game() {
   isRunning = false;
-  registry = new Registry();
+  registry = std::make_unique<Registry>();
   Logger::Log("Game constructor Called!");
 }
 
