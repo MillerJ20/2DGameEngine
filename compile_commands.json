@@ -1,7 +1,0 @@
-[
-  {
-    "directory": "/home/millerjohnston/repos/2dgameengine/",
-    "command": "clang++.exe -x c++ src/*.cpp -std=c++17 -Iinclude -I./libs",
-    "file": "./src/Main.cpp"
-  }
-]
