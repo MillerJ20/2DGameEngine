@@ -14,7 +14,7 @@ int BaseComponent::nextId = 0;
 void System::AddEntityToSystem(Entity entity) { entities.push_back(entity); }
 
 void System::RemoveEntityFromSystem(Entity entity) {
-  for (int i = 0; i < entities.size(); i++) {
+  for (int i = 0; i < static_cast<int>(entities.size()); i++) {
     if (entities[i].GetId() == entity.GetId()) {
       entities.erase(entities.begin() + i);
     }
@@ -34,9 +34,11 @@ Entity Registry::CreateEntity() {
   entityId = numEntities++;
 
   Entity entityToCreate(entityId);
+  entityToCreate.registry = this;
+
   entitiesToBeAdded.insert(entityToCreate);
 
-  if (entityId >= entityComponentSignature.size()) {
+  if (entityId >= static_cast<int>(entityComponentSignature.size())) {
     entityComponentSignature.resize(entityId + 1);
   }
 

@@ -24,6 +24,7 @@ protected:
 
 // Component class to expose the private ID variable
 template <typename TComponent> class Component : public BaseComponent {
+public:
   static int GetId() {
     static auto id = nextId++;
     return id;
@@ -43,6 +44,15 @@ public:
   bool operator!=(const Entity& other) const { return id != other.id; }
   bool operator>(const Entity& other) const { return id > other.id; }
   bool operator<(const Entity& other) const { return id < other.id; }
+
+  template <typename TComponent, typename... TArgs>
+  void AddComponent(TArgs&&... args);
+  template <typename TComponent> void RemoveComponent();
+  template <typename TComponent> bool HasComponent() const;
+  template <typename TComponent> TComponent& GetComponent() const;
+
+  // Hold a pointer to entity's owner registry
+  class Registry* registry;
 };
 
 // System class to perform logic on data in components
@@ -80,7 +90,7 @@ public:
 
   bool IsEmpty() const { return data.empty(); }
   int GetSize() const { return data.size(); }
-  void Resize(int n) { data.resize(); }
+  void Resize(int n) { data.resize(n); }
   void Clear() { data.clear(); };
   void Add(T object) { data.push_back(object); }
   void Set(int index, T object) { data[index] = object; }
@@ -128,10 +138,11 @@ public:
   void AddEntityToSystem(Entity entity);
 
   // Component Methods
-  template <typename T, typename... TArgs>
+  template <typename TComponent, typename... TArgs>
   void AddComponent(Entity entity, TArgs&&... args);
-  template <typename T> void RemoveComponent(Entity entity);
-  template <typename T> bool HasComponent(Entity entity) const;
+  template <typename TComponent> void RemoveComponent(Entity entity);
+  template <typename TComponent> bool HasComponent(Entity entity) const;
+  template <typename TComponent> TComponent& GetComponent(Entity entity) const;
 };
 
 // Component Templates
@@ -140,65 +151,92 @@ template <typename TComponent> void System::RequireComponent() {
   componentSignature.set(componentId);
 }
 
-template <typename T, typename... TArgs>
+template <typename TComponent, typename... TArgs>
 void Registry::AddComponent(Entity entity, TArgs&&... args) {
-  const auto componentId = Component<T>::GetId();
+  const auto componentId = Component<TComponent>::GetId();
   const auto entityId = entity.GetId();
 
-  if (componentId >= componentPools.size()) {
+  if (componentId >= static_cast<int>(componentPools.size())) {
     componentPools.resize(componentId + 1, nullptr);
   }
 
   if (!componentPools[componentId]) {
-    std::shared_ptr<Pool<T>> newComponentPool = std::make_shared<Pool<T>>();
+    std::shared_ptr<Pool<TComponent>> newComponentPool =
+        std::make_shared<Pool<TComponent>>();
     componentPools[componentId] = newComponentPool;
   }
 
-  std::shared_ptr<Pool<T>> currentPool =
-      std::static_pointer_cast(componentPools[componentId]);
+  std::shared_ptr<Pool<TComponent>> currentPool =
+      std::static_pointer_cast<Pool<TComponent>>(componentPools[componentId]);
 
-  if (entityId > currentPool->GetSize()) {
+  if (entityId >= currentPool->GetSize()) {
     currentPool->Resize(numEntities);
   }
 
   // Create component of type T and pass in the parameters
-  T newComponent(std::forward<TArgs>(args)...);
+  TComponent newComponent(std::forward<TArgs>(args)...);
 
   // Add the new component to the entity within the current pool
   currentPool->Set(entityId, newComponent);
 
   // Flip the bit for the newly added component to "on"
   entityComponentSignature[entityId].set(componentId);
+
+  Logger::Log("Component Id: " + std::to_string(componentId) +
+              " was added to entity id: " + std::to_string(entityId));
 }
 
-template <typename T> void Registry::RemoveComponent(Entity entity) {
-  const auto componentId = Component<T>::GetId();
+template <typename TComponent> void Registry::RemoveComponent(Entity entity) {
+  const auto componentId = Component<TComponent>::GetId();
   const auto entityId = entity.GetId();
 
-  if (componentId >= componentPools.size() || !componentPools[componentId]) {
+  if (componentId >= static_cast<int>(componentPools.size()) ||
+      !componentPools[componentId]) {
     Logger::Err("Attempting to remove component with ID: " +
                 std::to_string(componentId) +
                 "on the entity with ID: " + std::to_string(entityId));
     return;
   }
 
-  Pool<T>* currentPool = componentPools[componentId];
-
-  if (!currentPool[entityId]) {
-    Logger::Err("Trying to remove a component from an entity that does not "
-                "contain that component");
-    return;
-  }
-
-  currentPool->RemoveAt(entityId);
   entityComponentSignature[entityId].set(componentId, false);
+  Logger::Log("Component Id: " + std::to_string(componentId) +
+              " was removed from entity id: " + std::to_string(entityId));
 }
 
-template <typename T> bool Registry::HasComponent(Entity entity) const {
-  const auto componentId = Component<T>::GetId();
+template <typename TComponent>
+bool Registry::HasComponent(Entity entity) const {
+  const auto componentId = Component<TComponent>::GetId();
   const auto entityId = entity.GetId();
 
   return entityComponentSignature[entityId].test(componentId);
+}
+
+template <typename TComponent>
+TComponent& Registry::GetComponent(Entity entity) const {
+  const auto componentId = Component<TComponent>::GetId();
+  const auto entityId = entity.GetId();
+  auto componentPool =
+      std::static_pointer_cast<Pool<TComponent>>(componentPools[componentId]);
+
+  return componentPool->Get(entityId);
+}
+
+// Entity Template Functions
+template <typename TComponent, typename... TArgs>
+void Entity::AddComponent(TArgs&&... args) {
+  registry->AddComponent<TComponent>(*this, std::forward<TArgs>(args)...);
+}
+
+template <typename TComponent> void Entity::RemoveComponent() {
+  registry->RemoveComponent<TComponent>(*this);
+}
+
+template <typename TComponent> bool Entity::HasComponent() const {
+  return registry->HasComponent<TComponent>(*this);
+}
+
+template <typename TComponent> TComponent& Entity::GetComponent() const {
+  registry->GetComponent<TComponent>(*this);
 }
 
 // System Template Functions

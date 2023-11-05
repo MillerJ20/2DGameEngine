@@ -1,4 +1,6 @@
 #include "Game.h"
+#include "../Components/RigidBodyComponent.h"
+#include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include "../Logger/Logger.h"
 #include "glm/fwd.hpp"
@@ -54,10 +56,12 @@ void Game::Initialize() {
 
 void Game::Setup() {
   Entity tank = registry->CreateEntity();
-  Entity truck = registry->CreateEntity();
-  // tank.AddComponent<TransformComponent>();
-  // tank.AddComponent<BoxColliderComponent>();
+
+  tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0),
+                                        glm::vec2(1.0, 1.0), 0.0);
+  tank.AddComponent<RigidBodyComponent>(glm::vec2(5.0, 5.0));
   // tank.AddComponent<SpriteComponent>("./assets/images/tank.png");
+  tank.RemoveComponent<TransformComponent>();
 }
 
 void Game::Run() {
