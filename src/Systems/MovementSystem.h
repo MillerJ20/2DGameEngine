@@ -13,9 +13,7 @@ public:
   }
 
   void Update(double deltaTime) {
-    // Loop all entities that the system is interested in
     for (auto entity : GetSystemEntities()) {
-      // Update entity position based on its velocity
       auto& transform = entity.GetComponent<TransformComponent>();
       const auto rigidbody = entity.GetComponent<RigidBodyComponent>();
 

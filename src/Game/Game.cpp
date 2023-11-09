@@ -1,9 +1,12 @@
 #include "Game.h"
 #include "../Components/RigidBodyComponent.h"
+#include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include "../Logger/Logger.h"
 #include "../Systems/MovementSystem.h"
+#include "../Systems/RenderSystem.h"
+#include "glm/fwd.hpp"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <glm/glm.hpp>
@@ -61,14 +64,20 @@ void Game::ProcessInput() {
 void Game::Setup() {
   // Add the systems that need to be processed in our game
   registry->AddSystem<MovementSystem>();
+  registry->AddSystem<RenderSystem>();
 
   // Create an entity
   Entity tank = registry->CreateEntity();
-
-  // Add some components to that entity
   tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0),
                                         glm::vec2(1.0, 1.0), 0.0);
-  tank.AddComponent<RigidBodyComponent>(glm::vec2(10.0, 50.0));
+  tank.AddComponent<RigidBodyComponent>(glm::vec2(10.0, 0.0));
+  tank.AddComponent<SpriteComponent>(10, 10);
+
+  Entity truck = registry->CreateEntity();
+  truck.AddComponent<TransformComponent>(glm::vec2(15.0, 40.0),
+                                         glm::vec2(2.0, 2.0), 0.0);
+  truck.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 70.0));
+  truck.AddComponent<SpriteComponent>(20, 40);
 }
 
 void Game::Update() {
@@ -96,7 +105,7 @@ void Game::Render() {
   SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
   SDL_RenderClear(renderer);
 
-  // TODO: Render game objects...
+  registry->GetSystem<RenderSystem>().Update(renderer);
 
   SDL_RenderPresent(renderer);
 }
