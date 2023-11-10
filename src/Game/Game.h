@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "../AssetStore/AssetStore.h"
 #include "../ECS/ECS.h"
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
@@ -17,6 +18,7 @@ private:
   SDL_Renderer* renderer;
 
   std::unique_ptr<Registry> registry;
+  std::unique_ptr<AssetStore> assetStore;
 
 public:
   Game();
