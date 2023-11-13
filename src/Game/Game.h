@@ -6,6 +6,7 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 #include <memory>
+#include <string>
 
 const int FPS = 60;
 const int MILLISECONDS_PER_FRAME = 1000 / FPS;
@@ -23,6 +24,9 @@ private:
 public:
   Game();
   ~Game();
+  void LoadLevel(int levelNumber);
+  void BuildLevelMap(std::string filePath);
+  void ReadMapFile(std::string filePath);
   void Setup();
   void Initialize();
   void Run();
