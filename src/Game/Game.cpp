@@ -94,9 +94,8 @@ void Game::ReadMapFile(std::string filePath) {
       srcRectX = (tileNum % 10) * 32;
 
       Entity mapTile = registry->CreateEntity();
-      mapTile.AddComponent<TransformComponent>(
-          glm::vec2(x * tileScale, y * tileScale),
-          glm::vec2(tileScale, tileScale), 0.0);
+      mapTile.AddComponent<TransformComponent>(glm::vec2(x * 2.56, y * 1.78),
+                                               glm::vec2(2.6, 1.8), 0.0);
       mapTile.AddComponent<SpriteComponent>("jungle-map", 32, 32, srcRectX,
                                             srcRectY);
       x = x + 32;
