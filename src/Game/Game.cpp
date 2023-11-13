@@ -9,9 +9,14 @@
 #include "glm/fwd.hpp"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <fstream>
 #include <glm/glm.hpp>
+#include <ios>
 #include <iostream>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 Game::Game() {
   isRunning = false;
@@ -63,7 +68,47 @@ void Game::ProcessInput() {
   }
 }
 
-void Game::Setup() {
+void Game::ReadMapFile(std::string filePath) {
+  std::fstream file;
+
+  file.open(filePath.c_str());
+
+  std::string word, row;
+  double x = 0, y = 0;
+  double tileScale = 2.0;
+
+  while (file >> row) {
+    std::stringstream stream(row);
+    while (std::getline(stream, word, ',')) {
+      int srcRectX, srcRectY;
+      int tileNum = std::stoi(word);
+
+      if (tileNum >= 20) {
+        srcRectY = 64;
+      } else if (tileNum >= 10) {
+        srcRectY = 32;
+      } else {
+        srcRectY = 0;
+      }
+
+      srcRectX = (tileNum % 10) * 32;
+
+      Entity mapTile = registry->CreateEntity();
+      mapTile.AddComponent<TransformComponent>(
+          glm::vec2(x * tileScale, y * tileScale),
+          glm::vec2(tileScale, tileScale), 0.0);
+      mapTile.AddComponent<SpriteComponent>("jungle-map", 32, 32, srcRectX,
+                                            srcRectY);
+      x = x + 32;
+      if (x >= 800) {
+        y = y + 32;
+        x = 0;
+      }
+    }
+  }
+}
+
+void Game::LoadLevel(int levelNumber) {
   // Add the systems that need to be processed in our game
   registry->AddSystem<MovementSystem>();
   registry->AddSystem<RenderSystem>();
@@ -74,11 +119,16 @@ void Game::Setup() {
   assetStore->AddTexture(renderer, "truck-image",
                          "./assets/images/truck-ford-right.png");
 
+  // Load texture from ./assets/tilemaps/jungle.png
+  assetStore->AddTexture(renderer, "jungle-map",
+                         "./assets/tilemaps/jungle.png");
+
+  ReadMapFile("./assets/tilemaps/jungle.map");
   // Create an entity
   Entity tank = registry->CreateEntity();
   tank.AddComponent<TransformComponent>(glm::vec2(1000.0, 10.0),
                                         glm::vec2(1.0, 1.0), 0.0);
-  tank.AddComponent<RigidBodyComponent>(glm::vec2(-50.0, 0.0));
+  tank.AddComponent<RigidBodyComponent>(glm::vec2(-50.0, 50.0));
   tank.AddComponent<SpriteComponent>("tank-image", 32, 32);
 
   Entity truck = registry->CreateEntity();
@@ -87,6 +137,8 @@ void Game::Setup() {
   truck.AddComponent<RigidBodyComponent>(glm::vec2(70.0, 0.0));
   truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
 }
+
+void Game::Setup() { LoadLevel(1); }
 
 void Game::Update() {
   // If we are too fast, waste some time until we reach the MILLISECS_PER_FRAME
