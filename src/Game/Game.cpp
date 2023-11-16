@@ -75,7 +75,6 @@ void Game::ReadMapFile(std::string filePath) {
 
   std::string word, row;
   double x = 0, y = 0;
-  double tileScale = 2.0;
 
   while (file >> row) {
     std::stringstream stream(row);
@@ -94,9 +93,11 @@ void Game::ReadMapFile(std::string filePath) {
       srcRectX = (tileNum % 10) * 32;
 
       Entity mapTile = registry->CreateEntity();
+
+      // Scale to 1080p
       mapTile.AddComponent<TransformComponent>(glm::vec2(x * 2.56, y * 1.78),
                                                glm::vec2(2.6, 1.8), 0.0);
-      mapTile.AddComponent<SpriteComponent>("jungle-map", 32, 32, srcRectX,
+      mapTile.AddComponent<SpriteComponent>("jungle-map", 32, 32, 0, srcRectX,
                                             srcRectY);
       x = x + 32;
       if (x >= 800) {
@@ -125,16 +126,16 @@ void Game::LoadLevel(int levelNumber) {
   ReadMapFile("./assets/tilemaps/jungle.map");
   // Create an entity
   Entity tank = registry->CreateEntity();
-  tank.AddComponent<TransformComponent>(glm::vec2(1000.0, 10.0),
+  tank.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0),
                                         glm::vec2(1.0, 1.0), 0.0);
-  tank.AddComponent<RigidBodyComponent>(glm::vec2(-50.0, 50.0));
-  tank.AddComponent<SpriteComponent>("tank-image", 32, 32);
+  tank.AddComponent<RigidBodyComponent>(glm::vec2(30.0, 0.0));
+  tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1);
 
   Entity truck = registry->CreateEntity();
-  truck.AddComponent<TransformComponent>(glm::vec2(15.0, 140.0),
+  truck.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0),
                                          glm::vec2(1.0, 1.0), 0.0);
-  truck.AddComponent<RigidBodyComponent>(glm::vec2(70.0, 0.0));
-  truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
+  truck.AddComponent<RigidBodyComponent>(glm::vec2(30.0, 0.0));
+  truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 2);
 }
 
 void Game::Setup() { LoadLevel(1); }
