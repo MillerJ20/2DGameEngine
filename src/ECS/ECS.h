@@ -3,6 +3,7 @@
 
 #include "../Logger/Logger.h"
 #include <bitset>
+#include <deque>
 #include <memory>
 #include <set>
 #include <typeindex>
@@ -41,6 +42,7 @@ private:
 public:
   Entity(int id) : id(id){};
   Entity(const Entity& entity) = default;
+  void Kill();
   int GetId() const;
 
   Entity& operator=(const Entity& other) = default;
@@ -146,6 +148,8 @@ private:
   std::set<Entity> entitiesToBeAdded;
   std::set<Entity> entitiesToBeKilled;
 
+  std::deque<int> freeIds;
+
 public:
   Registry() { Logger::Log("Registry constructor called"); }
 
@@ -157,6 +161,7 @@ public:
 
   // Entity management
   Entity CreateEntity();
+  void KillEntity(Entity entity);
 
   // Component management
   template <typename TComponent, typename... TArgs>
@@ -175,6 +180,7 @@ public:
   // Checks the component signature of an entity and add the entity to the
   // systems that are interested in it
   void AddEntityToSystems(Entity entity);
+  void RemoveEntityFromSystems(Entity entity);
 };
 
 template <typename TComponent> void System::RequireComponent() {

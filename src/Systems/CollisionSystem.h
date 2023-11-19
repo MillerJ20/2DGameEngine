@@ -42,6 +42,8 @@ public:
           Logger::Log(
               "Collision detected between: " + std::to_string(a.GetId()) +
               " and " + std::to_string(b.GetId()));
+          a.Kill();
+          b.Kill();
         }
       }
     }
