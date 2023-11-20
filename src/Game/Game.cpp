@@ -5,9 +5,13 @@
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
+#include "../EventManager/EventManager.h"
+#include "../Events/KeyDownEvent.h"
 #include "../Logger/Logger.h"
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/CollisionSystem.h"
+#include "../Systems/DamageSystem.h"
+#include "../Systems/KeypressSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderColliderSystem.h"
 #include "../Systems/RenderSystem.h"
@@ -27,6 +31,7 @@ Game::Game() {
   isRunning = false;
   registry = std::make_unique<Registry>();
   assetStore = std::make_unique<AssetStore>();
+  eventManager = std::make_unique<EventManager>();
   Logger::Log("Game constructor called!");
 }
 
@@ -71,6 +76,7 @@ void Game::ProcessInput() {
       if (sdlEvent.key.keysym.sym == SDLK_d) {
         isDebug = !isDebug;
       }
+      eventManager->EmitEvent<KeyDownEvent>(sdlEvent.key.keysym.sym);
       break;
     }
   }
@@ -123,6 +129,8 @@ void Game::LoadLevel(int levelNumber) {
   registry->AddSystem<AnimationSystem>();
   registry->AddSystem<CollisionSystem>();
   registry->AddSystem<RenderColliderSystem>();
+  registry->AddSystem<DamageSystem>();
+  registry->AddSystem<KeypressSystem>();
 
   // Adding assets to the assetStore
   assetStore->AddTexture(renderer, "tank-image",
@@ -184,6 +192,12 @@ void Game::Update() {
   // Store the "previous" frame time
   msPreviousFrame = SDL_GetTicks();
 
+  eventManager->Reset();
+
+  // Subscribe to events
+  registry->GetSystem<DamageSystem>().SubscribeToEvents(eventManager);
+  registry->GetSystem<KeypressSystem>().SubscribeToEvents(eventManager);
+
   // Update the registry to process the entities that are waiting to be
   // created/deleted
   registry->Update();
@@ -191,7 +205,7 @@ void Game::Update() {
   // Ask all the systems to update
   registry->GetSystem<MovementSystem>().Update(deltaTime);
   registry->GetSystem<AnimationSystem>().Update();
-  registry->GetSystem<CollisionSystem>().Update();
+  registry->GetSystem<CollisionSystem>().Update(eventManager);
 }
 
 void Game::Render() {

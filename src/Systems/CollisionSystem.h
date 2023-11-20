@@ -4,6 +4,9 @@
 #include "../Components/BoxColliderComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
+#include "../EventManager/EventManager.h"
+#include "../Events/CollisionEvent.h"
+#include <memory>
 #include <string>
 
 class CollisionSystem : public System {
@@ -13,7 +16,7 @@ public:
     RequireComponent<TransformComponent>();
   };
 
-  void Update() {
+  void Update(std::unique_ptr<EventManager>& eventManager) {
     auto entities = GetSystemEntities();
     for (auto i = entities.begin(); i != entities.end(); i++) {
       Entity a = *i;
@@ -42,8 +45,8 @@ public:
           Logger::Log(
               "Collision detected between: " + std::to_string(a.GetId()) +
               " and " + std::to_string(b.GetId()));
-          a.Kill();
-          b.Kill();
+
+          eventManager->EmitEvent<CollisionEvent>(a, b);
         }
       }
     }

@@ -170,11 +170,14 @@ public:
   template <typename TComponent> bool HasComponent(Entity entity) const;
   template <typename TComponent> TComponent& GetComponent(Entity entity) const;
 
-  // System management
+  // Add a system to the registry
   template <typename TSystem, typename... TArgs>
   void AddSystem(TArgs&&... args);
+  // Remove a system from the registry
   template <typename TSystem> void RemoveSystem();
+  // Check if the registry contains a system
   template <typename TSystem> bool HasSystem() const;
+  // Get a system from the registry
   template <typename TSystem> TSystem& GetSystem() const;
 
   // Checks the component signature of an entity and add the entity to the
