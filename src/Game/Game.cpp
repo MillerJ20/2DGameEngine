@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "../Components/AnimationComponent.h"
 #include "../Components/BoxColliderComponent.h"
+#include "../Components/CircleColliderComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
@@ -9,10 +10,12 @@
 #include "../Events/KeyDownEvent.h"
 #include "../Logger/Logger.h"
 #include "../Systems/AnimationSystem.h"
+#include "../Systems/CircleCollisionSystem.h"
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/DamageSystem.h"
 #include "../Systems/KeypressSystem.h"
 #include "../Systems/MovementSystem.h"
+#include "../Systems/RenderCircleColliderSystem.h"
 #include "../Systems/RenderColliderSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "glm/fwd.hpp"
@@ -125,9 +128,11 @@ void Game::ReadMapFile(std::string filePath) {
 void Game::LoadLevel(int levelNumber) {
   // Add the systems that need to be processed in our game
   registry->AddSystem<MovementSystem>();
+  registry->AddSystem<RenderCircleColliderSystem>();
   registry->AddSystem<RenderSystem>();
   registry->AddSystem<AnimationSystem>();
   registry->AddSystem<CollisionSystem>();
+  registry->AddSystem<CircleCollisionSystem>();
   registry->AddSystem<RenderColliderSystem>();
   registry->AddSystem<DamageSystem>();
   registry->AddSystem<KeypressSystem>();
@@ -167,14 +172,14 @@ void Game::LoadLevel(int levelNumber) {
                                          glm::vec2(1.0, 1.0), 0.0);
   truck.AddComponent<RigidBodyComponent>(glm::vec2(30.0, 0.0));
   truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 2);
-  truck.AddComponent<BoxColliderComponent>(32, 32);
+  truck.AddComponent<CircleColliderComponent>(16);
 
   Entity tank = registry->CreateEntity();
   tank.AddComponent<TransformComponent>(glm::vec2(300.0, 10.0),
                                         glm::vec2(1.0, 1.0), 0.0);
   tank.AddComponent<RigidBodyComponent>(glm::vec2(-30.0, 0.0));
   tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 2);
-  tank.AddComponent<BoxColliderComponent>(32, 32);
+  tank.AddComponent<CircleColliderComponent>(16, -5.5);
 }
 
 void Game::Setup() { LoadLevel(1); }
@@ -206,6 +211,7 @@ void Game::Update() {
   registry->GetSystem<MovementSystem>().Update(deltaTime);
   registry->GetSystem<AnimationSystem>().Update();
   registry->GetSystem<CollisionSystem>().Update(eventManager);
+  registry->GetSystem<CircleCollisionSystem>().Update(eventManager);
 }
 
 void Game::Render() {
@@ -214,7 +220,9 @@ void Game::Render() {
 
   registry->GetSystem<RenderSystem>().Update(renderer, assetStore);
   if (isDebug) {
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     registry->GetSystem<RenderColliderSystem>().Update(renderer);
+    registry->GetSystem<RenderCircleColliderSystem>().Update(renderer);
   }
 
   SDL_RenderPresent(renderer);
