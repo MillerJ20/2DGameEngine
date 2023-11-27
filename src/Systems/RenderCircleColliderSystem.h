@@ -19,12 +19,14 @@ public:
       const auto transform = entity.GetComponent<TransformComponent>();
       const auto collider = entity.GetComponent<CircleColliderComponent>();
 
-      DrawCircle(renderer, transform.position.x, transform.position.y,
+      DrawCircle(renderer,
+                 transform.position.x + collider.radius + collider.offset,
+                 transform.position.y + collider.radius + collider.offset,
                  collider.radius);
     }
   }
 
-  void DrawCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY,
+  void DrawCircle(SDL_Renderer* renderer, int32_t centerX, int32_t centerY,
                   int32_t radius) {
     const int32_t diameter = (radius * 2);
 
@@ -36,14 +38,14 @@ public:
 
     while (x >= y) {
       // Each of the following renders an octant of the circle
-      SDL_RenderDrawPoint(renderer, centreX + x, centreY - y);
-      SDL_RenderDrawPoint(renderer, centreX + x, centreY + y);
-      SDL_RenderDrawPoint(renderer, centreX - x, centreY - y);
-      SDL_RenderDrawPoint(renderer, centreX - x, centreY + y);
-      SDL_RenderDrawPoint(renderer, centreX + y, centreY - x);
-      SDL_RenderDrawPoint(renderer, centreX + y, centreY + x);
-      SDL_RenderDrawPoint(renderer, centreX - y, centreY - x);
-      SDL_RenderDrawPoint(renderer, centreX - y, centreY + x);
+      SDL_RenderDrawPoint(renderer, centerX + x, centerY - y);
+      SDL_RenderDrawPoint(renderer, centerX + x, centerY + y);
+      SDL_RenderDrawPoint(renderer, centerX - x, centerY - y);
+      SDL_RenderDrawPoint(renderer, centerX - x, centerY + y);
+      SDL_RenderDrawPoint(renderer, centerX + y, centerY - x);
+      SDL_RenderDrawPoint(renderer, centerX + y, centerY + x);
+      SDL_RenderDrawPoint(renderer, centerX - y, centerY - x);
+      SDL_RenderDrawPoint(renderer, centerX - y, centerY + x);
 
       if (error <= 0) {
         ++y;

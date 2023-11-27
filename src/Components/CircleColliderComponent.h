@@ -5,8 +5,12 @@
 
 struct CircleColliderComponent {
   double radius;
+  double offset;
 
-  CircleColliderComponent(double radius = 0) { this->radius = radius; }
+  CircleColliderComponent(double radius = 0, double offset = 0) {
+    this->radius = radius;
+    this->offset = offset;
+  }
 };
 
 #endif // !CIRCLECOLLIDERCOMPONENT_H

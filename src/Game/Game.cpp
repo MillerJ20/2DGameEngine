@@ -172,14 +172,14 @@ void Game::LoadLevel(int levelNumber) {
                                          glm::vec2(1.0, 1.0), 0.0);
   truck.AddComponent<RigidBodyComponent>(glm::vec2(30.0, 0.0));
   truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 2);
-  truck.AddComponent<CircleColliderComponent>(15.5);
+  truck.AddComponent<CircleColliderComponent>(16);
 
   Entity tank = registry->CreateEntity();
   tank.AddComponent<TransformComponent>(glm::vec2(300.0, 10.0),
                                         glm::vec2(1.0, 1.0), 0.0);
   tank.AddComponent<RigidBodyComponent>(glm::vec2(-30.0, 0.0));
   tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 2);
-  tank.AddComponent<CircleColliderComponent>(15.5);
+  tank.AddComponent<CircleColliderComponent>(16, -5.5);
 }
 
 void Game::Setup() { LoadLevel(1); }
@@ -220,6 +220,7 @@ void Game::Render() {
 
   registry->GetSystem<RenderSystem>().Update(renderer, assetStore);
   if (isDebug) {
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     registry->GetSystem<RenderColliderSystem>().Update(renderer);
     registry->GetSystem<RenderCircleColliderSystem>().Update(renderer);
   }

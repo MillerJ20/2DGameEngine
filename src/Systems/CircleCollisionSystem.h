@@ -36,7 +36,8 @@ public:
 
         double distance = calculateDistance(aTransform, bTransform);
 
-        if (distance <= (aCollider.radius + bCollider.radius)) {
+        if (distance <= ((aCollider.radius - aCollider.offset) +
+                         (bCollider.radius - bCollider.offset))) {
           Logger::Log(
               "Collision detected between: " + std::to_string(a.GetId()) +
               " and " + std::to_string(b.GetId()));
