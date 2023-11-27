@@ -5,6 +5,8 @@
 
 struct CircleColliderComponent {
   double radius;
+
+  // TODO: Offset should be a vec2
   double offset;
 
   CircleColliderComponent(double radius = 0, double offset = 0) {

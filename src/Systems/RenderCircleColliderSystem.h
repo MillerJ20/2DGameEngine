@@ -14,6 +14,8 @@ public:
     RequireComponent<CircleColliderComponent>();
   }
 
+  // TODO: This should be refactored into a "DebugUpdate" method in the base
+  // RenderSystem This class should be removed after
   void Update(SDL_Renderer* renderer) {
     for (auto entity : GetSystemEntities()) {
       const auto transform = entity.GetComponent<TransformComponent>();
@@ -26,6 +28,7 @@ public:
     }
   }
 
+  // TODO: Verify that this is the best way to draw a 2D circle with SDL
   void DrawCircle(SDL_Renderer* renderer, int32_t centerX, int32_t centerY,
                   int32_t radius) {
     const int32_t diameter = (radius * 2);

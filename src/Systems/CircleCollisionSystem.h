@@ -17,6 +17,8 @@ public:
     RequireComponent<TransformComponent>();
   };
 
+  // TODO: This will need to be merged into the base collision system class
+  // Do I dare introduce further ineritance with an ICollisionSystem base class?
   void Update(std::unique_ptr<EventManager>& eventManager) {
     auto entities = GetSystemEntities();
     for (auto i = entities.begin(); i != entities.end(); i++) {
@@ -36,6 +38,8 @@ public:
 
         double distance = calculateDistance(aTransform, bTransform);
 
+        // TODO: These offsets will eventually be a vec2 and need to be
+        // supported
         if (distance <= ((aCollider.radius - aCollider.offset) +
                          (bCollider.radius - bCollider.offset))) {
           Logger::Log(

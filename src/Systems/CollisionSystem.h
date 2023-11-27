@@ -16,6 +16,9 @@ public:
     RequireComponent<TransformComponent>();
   };
 
+  // TODO: This class should handle all collision checks
+  // Circle collision class should be removed for this base class
+  // How to handle collisions between different shapes and rotations?
   void Update(std::unique_ptr<EventManager>& eventManager) {
     auto entities = GetSystemEntities();
     for (auto i = entities.begin(); i != entities.end(); i++) {

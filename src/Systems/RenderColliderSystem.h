@@ -14,6 +14,8 @@ public:
     RequireComponent<BoxColliderComponent>();
   }
 
+  // TODO: This should be refactored into a "DebugUpdate" method in the base
+  // RenderSystem This class should be removed after
   void Update(SDL_Renderer* renderer) {
     for (auto entity : GetSystemEntities()) {
       const auto transform = entity.GetComponent<TransformComponent>();
@@ -23,7 +25,6 @@ public:
           static_cast<int>(transform.position.x + collider.offset.x),
           static_cast<int>(transform.position.y + collider.offset.y),
           static_cast<int>(collider.width), static_cast<int>(collider.height)};
-      // TODO: Change rectangle color if a collision is occuring
       SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
       SDL_RenderDrawRect(renderer, &colliderRect);
     }

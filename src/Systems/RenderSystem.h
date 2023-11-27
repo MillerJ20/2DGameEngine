@@ -18,8 +18,12 @@ public:
     RequireComponent<TransformComponent>();
   }
 
+  // TODO: Rendering of colliders in debug mode should also be handled here
+  // Add a "DebugUpdate()" method for drawing of ebug information
+  // Remove BoxColliderRenderSystem and CircleColliderRenderSystem
   void Update(SDL_Renderer* renderer,
               std::unique_ptr<AssetStore>& asssetStore) {
+
     // UGLY ASS SORTING BELOW:
     // Create a vector to hold both sprite and transform components of all
     // entites

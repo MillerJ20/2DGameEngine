@@ -85,14 +85,23 @@ void Game::ProcessInput() {
   }
 }
 
+// This is far from perfect and does not provide dynamic resolution scaling
+// TODO: Make this perfect and provide dynamic resolution scaling
+// TODO: Allow this to change/rerender based on settings change
 void Game::ReadMapFile(std::string filePath) {
+  // TODO: Ensure the file type is of the proper .map (csv) format that is
+  // expected
+
   std::fstream file;
 
+  // TODO: Does this assign the string to the "file" var?
   file.open(filePath.c_str());
 
   std::string word, row;
   double x = 0, y = 0;
 
+  // TODO: Find a better way to loop through this csv and build tiles, this is
+  // so bad
   while (file >> row) {
     std::stringstream stream(row);
     while (std::getline(stream, word, ',')) {
@@ -111,7 +120,7 @@ void Game::ReadMapFile(std::string filePath) {
 
       Entity mapTile = registry->CreateEntity();
 
-      // Scale to 1080p
+      // Scale to 1080p (THE DUMB AND UGLY WAY)
       mapTile.AddComponent<TransformComponent>(glm::vec2(x * 2.56, y * 1.78),
                                                glm::vec2(2.6, 1.8), 0.0);
       mapTile.AddComponent<SpriteComponent>("jungle-map", 32, 32, 0, srcRectX,

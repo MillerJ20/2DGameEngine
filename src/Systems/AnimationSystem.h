@@ -18,7 +18,6 @@ public:
       auto& animation = entity.GetComponent<AnimationComponent>();
       auto& sprite = entity.GetComponent<SpriteComponent>();
 
-      // TODO: Change current frame
       animation.currentFrame = ((SDL_GetTicks() - animation.startTime) *
                                 animation.frameRateSpeed / 1000) %
                                animation.numFrames;
