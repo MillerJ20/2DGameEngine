@@ -2,6 +2,7 @@
 #include "../Components/AnimationComponent.h"
 #include "../Components/BoxColliderComponent.h"
 #include "../Components/CircleColliderComponent.h"
+#include "../Components/KeyboardControlledComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
@@ -13,7 +14,7 @@
 #include "../Systems/CircleCollisionSystem.h"
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/DamageSystem.h"
-#include "../Systems/KeypressSystem.h"
+#include "../Systems/KeyboardControlSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderCircleColliderSystem.h"
 #include "../Systems/RenderColliderSystem.h"
@@ -135,7 +136,8 @@ void Game::ReadMapFile(std::string filePath) {
 }
 
 void Game::LoadLevel(int levelNumber) {
-  // Add the systems that need to be processed in our game
+
+  // Add the sytems that need to be processed in our game
   registry->AddSystem<MovementSystem>();
   registry->AddSystem<RenderCircleColliderSystem>();
   registry->AddSystem<RenderSystem>();
@@ -144,51 +146,78 @@ void Game::LoadLevel(int levelNumber) {
   registry->AddSystem<CircleCollisionSystem>();
   registry->AddSystem<RenderColliderSystem>();
   registry->AddSystem<DamageSystem>();
-  registry->AddSystem<KeypressSystem>();
+  registry->AddSystem<KeyboardControlSystem>();
 
-  // Adding assets to the assetStore
+  // Adding assets to the asset store
   assetStore->AddTexture(renderer, "tank-image",
-                         "./assets/images/tank-tiger-left.png");
+                         "./assets/images/tank-panther-right.png");
   assetStore->AddTexture(renderer, "truck-image",
                          "./assets/images/truck-ford-right.png");
   assetStore->AddTexture(renderer, "chopper-image",
-                         "./assets/images/chopper.png");
+                         "./assets/images/chopper-spritesheet.png");
   assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
-
-  // Load texture from ./assets/tilemaps/jungle.png
-  assetStore->AddTexture(renderer, "jungle-map",
+  assetStore->AddTexture(renderer, "tilemap-image",
                          "./assets/tilemaps/jungle.png");
 
-  ReadMapFile("./assets/tilemaps/jungle.map");
+  // Load the tilemap
+  int tileSize = 32;
+  double tileScale = 2.5;
+  int mapNumCols = 25;
+  int mapNumRows = 20;
+
+  std::fstream mapFile;
+  mapFile.open("./assets/tilemaps/jungle.map");
+
+  for (int y = 0; y < mapNumRows; y++) {
+    for (int x = 0; x < mapNumCols; x++) {
+      char ch;
+      mapFile.get(ch);
+      int srcRectY = std::atoi(&ch) * tileSize;
+      mapFile.get(ch);
+      int srcRectX = std::atoi(&ch) * tileSize;
+      mapFile.ignore();
+
+      Entity tile = registry->CreateEntity();
+      tile.AddComponent<TransformComponent>(
+          glm::vec2(x * (tileScale * tileSize), y * (tileScale * tileSize)),
+          glm::vec2(tileScale, tileScale), 0.0);
+      tile.AddComponent<SpriteComponent>("tilemap-image", tileSize, tileSize, 0,
+                                         srcRectX, srcRectY);
+    }
+  }
+  mapFile.close();
 
   // Create an entity
   Entity chopper = registry->CreateEntity();
-  chopper.AddComponent<TransformComponent>(glm::vec2(500.0, 100.0),
+  chopper.AddComponent<TransformComponent>(glm::vec2(10.0, 100.0),
                                            glm::vec2(1.0, 1.0), 0.0);
-  chopper.AddComponent<RigidBodyComponent>(glm::vec2(50.0, 0.0));
+  chopper.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
   chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 1);
-  chopper.AddComponent<AnimationComponent>(2, 10, true);
+  chopper.AddComponent<AnimationComponent>(2, 15, true);
+  chopper.AddComponent<KeyboardControlledComponent>(
+      glm::vec2(0, -100), glm::vec2(100, 0), glm::vec2(0, 100),
+      glm::vec2(-100, 0));
 
   Entity radar = registry->CreateEntity();
-  radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 80, 10.0),
+  radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 74, 10.0),
                                          glm::vec2(1.0, 1.0), 0.0);
   radar.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
   radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 1);
-  radar.AddComponent<AnimationComponent>(8, 10, true);
+  radar.AddComponent<AnimationComponent>(8, 5, true);
+
+  Entity tank = registry->CreateEntity();
+  tank.AddComponent<TransformComponent>(glm::vec2(500.0, 10.0),
+                                        glm::vec2(1.0, 1.0), 0.0);
+  tank.AddComponent<RigidBodyComponent>(glm::vec2(-30.0, 0.0));
+  tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1);
+  tank.AddComponent<BoxColliderComponent>(32, 32);
 
   Entity truck = registry->CreateEntity();
   truck.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0),
                                          glm::vec2(1.0, 1.0), 0.0);
-  truck.AddComponent<RigidBodyComponent>(glm::vec2(30.0, 0.0));
+  truck.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
   truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 2);
-  truck.AddComponent<CircleColliderComponent>(16);
-
-  Entity tank = registry->CreateEntity();
-  tank.AddComponent<TransformComponent>(glm::vec2(300.0, 10.0),
-                                        glm::vec2(1.0, 1.0), 0.0);
-  tank.AddComponent<RigidBodyComponent>(glm::vec2(-30.0, 0.0));
-  tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 2);
-  tank.AddComponent<CircleColliderComponent>(16, -5.5);
+  truck.AddComponent<BoxColliderComponent>(32, 32);
 }
 
 void Game::Setup() { LoadLevel(1); }
@@ -210,7 +239,7 @@ void Game::Update() {
 
   // Subscribe to events
   registry->GetSystem<DamageSystem>().SubscribeToEvents(eventManager);
-  registry->GetSystem<KeypressSystem>().SubscribeToEvents(eventManager);
+  registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(eventManager);
 
   // Update the registry to process the entities that are waiting to be
   // created/deleted

@@ -3,14 +3,12 @@
 
 #include "Event.h"
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_keyboard.h>
-#include <string>
 
 class KeyDownEvent : public Event {
 public:
-  std::string keyCode;
+  SDL_Keycode keyCode;
 
-  KeyDownEvent(SDL_Keycode keyCode) { this->keyCode = SDL_GetKeyName(keyCode); }
+  KeyDownEvent(SDL_Keycode keyCode) { this->keyCode = keyCode; }
 };
 
 #endif // !KEYDOWNEVENT_H
