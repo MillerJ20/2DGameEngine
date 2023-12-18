@@ -21,6 +21,8 @@ public:
       const auto transform = entity.GetComponent<TransformComponent>();
       const auto collider = entity.GetComponent<CircleColliderComponent>();
 
+      // TODO: Investigate scaling circles to ensure this transform.scale.x is
+      // the best to use here
       DrawCircle(
           renderer,
           transform.position.x + collider.radius + collider.offset - camera.x,
