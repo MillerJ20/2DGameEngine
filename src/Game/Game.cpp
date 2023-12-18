@@ -208,8 +208,8 @@ void Game::LoadLevel(int levelNumber) {
   chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 1);
   chopper.AddComponent<AnimationComponent>(2, 15, true);
   chopper.AddComponent<KeyboardControlledComponent>(
-      glm::vec2(0, -100), glm::vec2(100, 0), glm::vec2(0, 100),
-      glm::vec2(-100, 0));
+      glm::vec2(0, -200), glm::vec2(200, 0), glm::vec2(0, 200),
+      glm::vec2(-200, 0));
   chopper.AddComponent<CameraFollowComponent>();
 
   Entity radar = registry->CreateEntity();
@@ -274,8 +274,8 @@ void Game::Render() {
   registry->GetSystem<RenderSystem>().Update(renderer, assetStore, camera);
   if (isDebug) {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    registry->GetSystem<RenderColliderSystem>().Update(renderer);
-    registry->GetSystem<RenderCircleColliderSystem>().Update(renderer);
+    registry->GetSystem<RenderColliderSystem>().Update(renderer, camera);
+    registry->GetSystem<RenderCircleColliderSystem>().Update(renderer, camera);
   }
 
   SDL_RenderPresent(renderer);

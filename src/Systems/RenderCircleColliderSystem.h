@@ -16,15 +16,16 @@ public:
 
   // TODO: This should be refactored into a "DebugUpdate" method in the base
   // RenderSystem This class should be removed after
-  void Update(SDL_Renderer* renderer) {
+  void Update(SDL_Renderer* renderer, SDL_Rect& camera) {
     for (auto entity : GetSystemEntities()) {
       const auto transform = entity.GetComponent<TransformComponent>();
       const auto collider = entity.GetComponent<CircleColliderComponent>();
 
-      DrawCircle(renderer,
-                 transform.position.x + collider.radius + collider.offset,
-                 transform.position.y + collider.radius + collider.offset,
-                 collider.radius);
+      DrawCircle(
+          renderer,
+          transform.position.x + collider.radius + collider.offset - camera.x,
+          transform.position.y + collider.radius + collider.offset - camera.y,
+          collider.radius * transform.scale.x);
     }
   }
 
