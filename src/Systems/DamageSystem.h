@@ -16,8 +16,8 @@ public:
   };
 
   void onCollision(CollisionEvent& event) {
-    event.a.Kill();
-    event.b.Kill();
+    // event.a.Kill();
+    // event.b.Kill();
   }
 };
 
