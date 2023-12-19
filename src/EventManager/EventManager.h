@@ -9,7 +9,6 @@
 #include <memory>
 #include <typeindex>
 #include <utility>
-#include <vector>
 
 class IEventCallback {
 private:

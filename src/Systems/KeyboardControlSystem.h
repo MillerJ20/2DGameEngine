@@ -7,6 +7,7 @@
 #include "../ECS/ECS.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/KeyDownEvent.h"
+#include <SDL2/SDL_keycode.h>
 
 class KeyboardControlSystem : public System {
 public:
@@ -44,6 +45,8 @@ public:
       case SDLK_LEFT:
         rigidbody.velocity = keyboardcontrol.leftVelocity;
         sprite.srcRect.y = sprite.height * 3;
+        break;
+      case SDLK_SPACE:
         break;
       }
     }
