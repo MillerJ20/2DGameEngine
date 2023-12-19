@@ -36,6 +36,8 @@ public:
           const auto transform = entity.GetComponent<TransformComponent>();
           const auto rigidbody = entity.GetComponent<RigidBodyComponent>();
 
+          // TODO: Refactor below code into a "Fire" function to avoid repition
+
           // If parent entity has sprite, start the projectile position in the
           // middle of the entity
           glm::vec2 projectilePosition = transform.position;
