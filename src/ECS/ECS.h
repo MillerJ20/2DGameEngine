@@ -45,6 +45,12 @@ public:
   void Kill();
   int GetId() const;
 
+  // Manage entity tags and Groups
+  void Tag(const std::string& tag);
+  bool HasTag(const std::string& tag) const;
+  void Group(const std::string& group);
+  bool BelongsToGroup(const std::string& group) const;
+
   Entity& operator=(const Entity& other) = default;
   bool operator==(const Entity& other) const { return id == other.id; }
   bool operator!=(const Entity& other) const { return id != other.id; }
@@ -150,6 +156,14 @@ private:
 
   std::deque<int> freeIds;
 
+  // Entity tags
+  std::unordered_map<std::string, Entity> entityPerTag;
+  std::unordered_map<int, std::string> tagPerEntity;
+
+  // Entity Groups
+  std::unordered_map<std::string, std::set<Entity>> entitiesPerGroup;
+  std::unordered_map<int, std::string> groupPerEntity;
+
 public:
   Registry() { Logger::Log("Registry constructor called"); }
 
@@ -162,6 +176,18 @@ public:
   // Entity management
   Entity CreateEntity();
   void KillEntity(Entity entity);
+
+  // Tag management
+  void TagEntity(Entity entity, const std::string& tag);
+  bool EntityHasTag(Entity entity, const std::string& tag) const;
+  Entity GetEntityByTag(const std::string& tag) const;
+  void RemoveEntityTag(Entity entity);
+
+  // Group management
+  void GroupEntity(Entity entity, const std::string& group);
+  bool EntityBelongsToGroup(Entity entity, const std::string& group) const;
+  std::vector<Entity> GetEntitiesByGroup(const std::string& group) const;
+  void RemoveEntityGroup(Entity entity);
 
   // Component management
   template <typename TComponent, typename... TArgs>

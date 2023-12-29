@@ -197,6 +197,7 @@ void Game::LoadLevel(int levelNumber) {
       mapFile.ignore();
 
       Entity tile = registry->CreateEntity();
+      tile.Group("tiles");
       tile.AddComponent<TransformComponent>(
           glm::vec2(x * (tileScale * tileSize), y * (tileScale * tileSize)),
           glm::vec2(tileScale, tileScale), 0.0);
@@ -210,6 +211,7 @@ void Game::LoadLevel(int levelNumber) {
 
   // Create an entity
   Entity chopper = registry->CreateEntity();
+  chopper.Tag("player");
   chopper.AddComponent<TransformComponent>(glm::vec2(10.0, 100.0),
                                            glm::vec2(1.0, 1.0), 0.0);
   chopper.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
@@ -231,6 +233,7 @@ void Game::LoadLevel(int levelNumber) {
   radar.AddComponent<AnimationComponent>(8, 5, true);
 
   Entity tank = registry->CreateEntity();
+  tank.Group("enemies");
   tank.AddComponent<TransformComponent>(glm::vec2(500.0, 10.0),
                                         glm::vec2(1.0, 1.0), 0.0);
   tank.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
@@ -240,6 +243,7 @@ void Game::LoadLevel(int levelNumber) {
                                                 3000, 0, false);
 
   Entity truck = registry->CreateEntity();
+  truck.Group("enemies");
   truck.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0),
                                          glm::vec2(1.0, 1.0), 0.0);
   truck.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
