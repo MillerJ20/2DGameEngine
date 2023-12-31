@@ -105,14 +105,19 @@ Registry::GetEntitiesByGroup(const std::string& group) const {
 
 void Registry::RemoveEntityGroup(Entity entity) {
   auto groupedEntity = groupPerEntity.find(entity.GetId());
+
   if (groupedEntity != groupPerEntity.end()) {
     auto group = entitiesPerGroup.find(groupedEntity->second);
+
     if (group != entitiesPerGroup.end()) {
       auto entityInGroup = group->second.find(entity);
-      group->second.erase(entityInGroup);
+
+      if (entityInGroup != group->second.end()) {
+        group->second.erase(entityInGroup);
+      }
     }
+    groupPerEntity.erase(groupedEntity);
   }
-  groupPerEntity.erase(groupedEntity);
 }
 
 void Registry::KillEntity(Entity entity) { entitiesToBeKilled.insert(entity); }

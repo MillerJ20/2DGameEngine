@@ -45,6 +45,9 @@ public:
   void Kill();
   int GetId() const;
 
+  // TODO: Remove string-based matching. Each tag/group is unique ID
+  // Stored in order to allow for Binary Search
+
   // Manage entity tags and Groups
   void Tag(const std::string& tag);
   bool HasTag(const std::string& tag) const;
