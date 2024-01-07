@@ -11,6 +11,8 @@
 #include <vector>
 
 const unsigned int MAX_COMPONENTS = 32;
+// TODO: Use a profiler (Valgrind) to measure memory/cache performance to check
+// for optimizations
 
 ////////////////////////////////////////////////////////////////////////////////
 // Signature
