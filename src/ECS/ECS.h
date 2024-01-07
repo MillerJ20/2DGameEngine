@@ -101,31 +101,90 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 class IPool {
 public:
-  virtual ~IPool() {}
+  virtual ~IPool() = default;
+  virtual void RemoveEntityFromPool(int entityId) = 0;
 };
 
 template <typename T> class Pool : public IPool {
 private:
+  // Vector of objects and current number of elements
   std::vector<T> data;
+  int size;
+
+  // Maps to keep track of entity ids per index
+  std::unordered_map<int, int> entityIdToIndex;
+  std::unordered_map<int, int> indexToEntityId;
 
 public:
-  Pool(int size = 100) { data.resize(size); }
+  Pool(int capacity = 100) {
+    size = 0;
+    data.resize(capacity);
+  }
 
   virtual ~Pool() = default;
 
-  bool isEmpty() const { return data.empty(); }
+  bool IsEmpty() const { return size == 0; }
 
-  int GetSize() const { return data.size(); }
+  int GetSize() const { return size; }
 
-  void Resize(int n) { data.resize(n); }
-
-  void Clear() { data.clear(); }
+  void Clear() {
+    data.clear();
+    entityIdToIndex.clear();
+    indexToEntityId.clear();
+    size = 0;
+  }
 
   void Add(T object) { data.push_back(object); }
 
-  void Set(int index, T object) { data[index] = object; }
+  void Set(int entityId, T object) {
+    if (entityIdToIndex.find(entityId) != entityIdToIndex.end()) {
+      // If the element exists, replace the component with current object
+      int index = entityIdToIndex[entityId];
+      data[index] = object;
+    } else {
+      int index = size;
+      entityIdToIndex.emplace(entityId, index);
+      indexToEntityId.emplace(index, entityId);
 
-  T& Get(int index) { return static_cast<T&>(data[index]); }
+      if (index >= data.capacity()) {
+        data.resize(size * 2);
+      }
+      data[index] = object;
+      size++;
+    }
+  }
+
+  void Remove(int entityId) {
+    // Find the index of the removed entity and the index of the entity at the
+    // end of the pool
+    int indexOfRemoved = entityIdToIndex[entityId];
+    int indexOfLast = size - 1;
+    // Replace the removed entity with the last entity in the pool
+    data[indexOfRemoved] = data[indexOfLast];
+
+    // Find the entity id of the last element
+    int entityIdOfLastElement = indexToEntityId[indexOfLast];
+    // Swap removed element with last element
+    entityIdToIndex[entityIdOfLastElement] = indexOfRemoved;
+    indexToEntityId[indexOfRemoved] = entityIdOfLastElement;
+
+    // Erase from the maps after swap
+    entityIdToIndex.erase(entityId);
+    indexToEntityId.erase(indexOfLast);
+
+    size--;
+  }
+
+  void RemoveEntityFromPool(int entityId) override {
+    if (entityIdToIndex.find(entityId) != entityIdToIndex.end()) {
+      Remove(entityId);
+    }
+  }
+
+  T& Get(int entityId) {
+    int index = entityIdToIndex[entityId];
+    return static_cast<T&>(data[index]);
+  }
 
   T& operator[](unsigned int index) { return data[index]; }
 };
@@ -258,27 +317,30 @@ void Registry::AddComponent(Entity entity, TArgs&&... args) {
   std::shared_ptr<Pool<TComponent>> componentPool =
       std::static_pointer_cast<Pool<TComponent>>(componentPools[componentId]);
 
-  if (entityId >= componentPool->GetSize()) {
-    componentPool->Resize(numEntities);
-  }
-
   TComponent newComponent(std::forward<TArgs>(args)...);
 
   componentPool->Set(entityId, newComponent);
 
   entityComponentSignatures[entityId].set(componentId);
 
-  // Logger::Log("Component id = " + std::to_string(componentId) +
-  // " was added to entity id " + std::to_string(entityId));
+  Logger::Log("Component id = " + std::to_string(componentId) +
+              " was added to entity id " + std::to_string(entityId));
 }
 
 template <typename TComponent> void Registry::RemoveComponent(Entity entity) {
   const auto componentId = Component<TComponent>::GetId();
   const auto entityId = entity.GetId();
+
+  // Remove component from the list for that entity
+  std::shared_ptr<Pool<TComponent>> componentPool =
+      std::static_pointer_cast<Pool<TComponent>>(componentPools[componentId]);
+  componentPool->Remove(entityId);
+
+  // Set component signature to false
   entityComponentSignatures[entityId].set(componentId, false);
 
-  // Logger::Log("Component id = " + std::to_string(componentId) +
-  // " was removed from entity id " + std::to_string(entityId));
+  Logger::Log("Component id = " + std::to_string(componentId) +
+              " was removed from entity id " + std::to_string(entityId));
 }
 
 template <typename TComponent>
