@@ -3,6 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
+#include <SDL2/SDL_ttf.h>
 #include <string>
 
 AssetStore::AssetStore() { Logger::Log("Asset Store constructor called!"); }
@@ -16,7 +17,14 @@ void AssetStore::ClearAssets() {
   for (auto texture : textures) {
     SDL_DestroyTexture(texture.second);
   }
+
   textures.clear();
+
+  for (auto font : fonts) {
+    TTF_CloseFont(font.second);
+  }
+
+  fonts.clear();
 }
 
 void AssetStore::AddTexture(SDL_Renderer* renderer, const std::string& assetId,
@@ -31,4 +39,13 @@ void AssetStore::AddTexture(SDL_Renderer* renderer, const std::string& assetId,
 
 SDL_Texture* AssetStore::GetTexture(const std::string& assetId) {
   return textures[assetId];
+}
+
+void AssetStore::AddFont(const std::string& assetId,
+                         const std::string& filePath, int fontSize) {
+  fonts.emplace(assetId, TTF_OpenFont(filePath.c_str(), fontSize));
+}
+
+TTF_Font* AssetStore::GetFont(const std::string& assetId) {
+  return fonts[assetId];
 }

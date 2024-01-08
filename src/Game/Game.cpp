@@ -7,6 +7,7 @@
 #include "../Components/ProjectileEmitterComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
+#include "../Components/TextLabelComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include "../EventManager/EventManager.h"
@@ -23,10 +24,14 @@
 #include "../Systems/ProjectileLifecycleSystem.h"
 #include "../Systems/RenderCircleColliderSystem.h"
 #include "../Systems/RenderColliderSystem.h"
+#include "../Systems/RenderHealthSystem.h"
 #include "../Systems/RenderSystem.h"
+#include "../Systems/RenderTextSystem.h"
 #include "glm/fwd.hpp"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_pixels.h>
+#include <SDL2/SDL_ttf.h>
 #include <fstream>
 #include <glm/glm.hpp>
 #include <memory>
@@ -51,6 +56,11 @@ Game::~Game() { Logger::Log("Game destructor called!"); }
 void Game::Initialize() {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     Logger::Err("Error initializing SDL.");
+    return;
+  }
+
+  if (TTF_Init() != 0) {
+    Logger::Err("Error initializing SDL TTF.");
     return;
   }
   SDL_DisplayMode displayMode;
@@ -164,6 +174,8 @@ void Game::LoadLevel(int levelNumber) {
   registry->AddSystem<CameraMovementSystem>();
   registry->AddSystem<ProjectileEmitSystem>();
   registry->AddSystem<ProjectileLifecycleSystem>();
+  registry->AddSystem<RenderTextSystem>();
+  registry->AddSystem<RenderHealthSystem>();
 
   // Adding assets to the asset store
   assetStore->AddTexture(renderer, "tank-image",
@@ -177,6 +189,7 @@ void Game::LoadLevel(int levelNumber) {
                          "./assets/images/bullet.png");
   assetStore->AddTexture(renderer, "tilemap-image",
                          "./assets/tilemaps/jungle.png");
+  assetStore->AddFont("charriot-font", "./assets/fonts/charriot.ttf", 14);
 
   // Load the tilemap
   int tileSize = 32;
@@ -297,6 +310,9 @@ void Game::Render() {
   SDL_RenderClear(renderer);
 
   registry->GetSystem<RenderSystem>().Update(renderer, assetStore, camera);
+  registry->GetSystem<RenderHealthSystem>().Update(renderer, assetStore,
+                                                   camera);
+  registry->GetSystem<RenderTextSystem>().Update(renderer, assetStore, camera);
   if (isDebug) {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     registry->GetSystem<RenderColliderSystem>().Update(renderer, camera);

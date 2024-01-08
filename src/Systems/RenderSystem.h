@@ -21,7 +21,7 @@ public:
   // TODO: Rendering of colliders in debug mode should also be handled here
   // Add a "DebugUpdate()" method for drawing of ebug information
   // Remove BoxColliderRenderSystem and CircleColliderRenderSystem
-  void Update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& asssetStore,
+  void Update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& assetStore,
               SDL_Rect& camera) {
 
     // UGLY ASS SORTING BELOW:
@@ -58,7 +58,7 @@ public:
                           static_cast<int>(sprite.width * transform.scale.x),
                           static_cast<int>(sprite.height * transform.scale.y)};
 
-      SDL_RenderCopyEx(renderer, asssetStore->GetTexture(sprite.assetId),
+      SDL_RenderCopyEx(renderer, assetStore->GetTexture(sprite.assetId),
                        &srcRect, &dstRect, transform.rotation, NULL,
                        SDL_FLIP_NONE);
     }
