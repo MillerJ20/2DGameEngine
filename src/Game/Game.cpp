@@ -7,7 +7,6 @@
 #include "../Components/ProjectileEmitterComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
-#include "../Components/TextLabelComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include "../EventManager/EventManager.h"
@@ -30,10 +29,14 @@
 #include "glm/fwd.hpp"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_ttf.h>
 #include <fstream>
 #include <glm/glm.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl.h>
+#include <imgui/imgui_sdl.h>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -81,6 +84,10 @@ void Game::Initialize() {
   }
   SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
+  // Initialize imgui context
+  ImGui::CreateContext();
+  ImGuiSDL::Initialize(renderer, windowWidth, windowHeight);
+
   // Initialize the camera
   camera.x = 0;
   camera.y = 0;
@@ -93,6 +100,18 @@ void Game::Initialize() {
 void Game::ProcessInput() {
   SDL_Event sdlEvent;
   while (SDL_PollEvent(&sdlEvent)) {
+    // ImGui SDL Events
+    ImGui_ImplSDL2_ProcessEvent(&sdlEvent);
+    ImGuiIO& io = ImGui::GetIO();
+
+    int mouseX, mouseY;
+    const int buttons = SDL_GetMouseState(&mouseX, &mouseY);
+
+    io.MousePos = ImVec2(mouseX, mouseY);
+    io.MouseDown[0] = buttons & SDL_BUTTON(SDL_BUTTON_LEFT);
+    io.MouseDown[1] = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
+
+    // Core SDL Events
     switch (sdlEvent.type) {
     case SDL_QUIT:
       isRunning = false;
@@ -317,6 +336,10 @@ void Game::Render() {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     registry->GetSystem<RenderColliderSystem>().Update(renderer, camera);
     registry->GetSystem<RenderCircleColliderSystem>().Update(renderer, camera);
+    ImGui::NewFrame();
+    ImGui::ShowDemoWindow();
+    ImGui::Render();
+    ImGuiSDL::Render(ImGui::GetDrawData());
   }
 
   SDL_RenderPresent(renderer);
@@ -332,6 +355,8 @@ void Game::Run() {
 }
 
 void Game::Destroy() {
+  ImGuiSDL::Deinitialize();
+  ImGui::DestroyContext();
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
