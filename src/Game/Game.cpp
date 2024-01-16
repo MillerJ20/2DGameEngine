@@ -23,6 +23,7 @@
 #include "../Systems/ProjectileLifecycleSystem.h"
 #include "../Systems/RenderCircleColliderSystem.h"
 #include "../Systems/RenderColliderSystem.h"
+#include "../Systems/RenderGUISystem.h"
 #include "../Systems/RenderHealthSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/RenderTextSystem.h"
@@ -195,6 +196,7 @@ void Game::LoadLevel(int levelNumber) {
   registry->AddSystem<ProjectileLifecycleSystem>();
   registry->AddSystem<RenderTextSystem>();
   registry->AddSystem<RenderHealthSystem>();
+  registry->AddSystem<RenderGUISystem>();
 
   // Adding assets to the asset store
   assetStore->AddTexture(renderer, "tank-image",
@@ -244,7 +246,7 @@ void Game::LoadLevel(int levelNumber) {
   // Create an entity
   Entity chopper = registry->CreateEntity();
   chopper.Tag("player");
-  chopper.AddComponent<TransformComponent>(glm::vec2(10.0, 100.0),
+  chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 100.0),
                                            glm::vec2(1.0, 1.0), 0.0);
   chopper.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
   chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 1);
@@ -336,10 +338,8 @@ void Game::Render() {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     registry->GetSystem<RenderColliderSystem>().Update(renderer, camera);
     registry->GetSystem<RenderCircleColliderSystem>().Update(renderer, camera);
-    ImGui::NewFrame();
-    ImGui::ShowDemoWindow();
-    ImGui::Render();
-    ImGuiSDL::Render(ImGui::GetDrawData());
+
+    registry->GetSystem<RenderGUISystem>().Update(registry);
   }
 
   SDL_RenderPresent(renderer);
