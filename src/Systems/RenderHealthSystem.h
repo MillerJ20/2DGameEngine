@@ -39,7 +39,7 @@ public:
         // 40-80 = yellow
         healthBarColor = {255, 255, 0};
       }
-      if (health.healthPercentage >= 80 && health.healthPercentage <= 100) {
+      if (health.healthPercentage >= 80) {
         // 80-100 = green
         healthBarColor = {0, 255, 0};
       }

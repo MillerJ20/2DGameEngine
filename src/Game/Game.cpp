@@ -339,7 +339,7 @@ void Game::Render() {
     registry->GetSystem<RenderColliderSystem>().Update(renderer, camera);
     registry->GetSystem<RenderCircleColliderSystem>().Update(renderer, camera);
 
-    registry->GetSystem<RenderGUISystem>().Update(registry);
+    registry->GetSystem<RenderGUISystem>().Update(registry, camera);
   }
 
   SDL_RenderPresent(renderer);
