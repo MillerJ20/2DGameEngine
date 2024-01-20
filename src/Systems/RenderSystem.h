@@ -31,12 +31,35 @@ public:
       TransformComponent transformComponent;
       SpriteComponent spriteComponent;
     };
+
     std::vector<RenderableEntity> renderableEntities;
+
     for (auto entity : GetSystemEntities()) {
       RenderableEntity renderableEntity;
       renderableEntity.spriteComponent = entity.GetComponent<SpriteComponent>();
       renderableEntity.transformComponent =
           entity.GetComponent<TransformComponent>();
+
+      bool isEntityOutsideCameraView =
+          (renderableEntity.transformComponent.position.x +
+                   (renderableEntity.transformComponent.scale.x *
+                    renderableEntity.spriteComponent.width) <
+               camera.x ||
+           renderableEntity.transformComponent.position.x +
+                   renderableEntity.spriteComponent.width >
+               camera.x + camera.w ||
+           renderableEntity.transformComponent.position.y +
+                   (renderableEntity.transformComponent.scale.y *
+                    renderableEntity.spriteComponent.height) <
+               camera.y ||
+           renderableEntity.transformComponent.position.y >
+               camera.y + camera.h);
+      // Only render entities in camera view
+      if (isEntityOutsideCameraView &&
+          !renderableEntity.spriteComponent.isFixed) {
+        continue;
+      }
+
       renderableEntities.emplace_back(renderableEntity);
     }
 
