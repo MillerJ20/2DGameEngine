@@ -1,13 +1,4 @@
 #include "Game.h"
-#include "../Components/AnimationComponent.h"
-#include "../Components/BoxColliderComponent.h"
-#include "../Components/CameraFollowComponent.h"
-#include "../Components/HealthComponent.h"
-#include "../Components/KeyboardControlledComponent.h"
-#include "../Components/ProjectileEmitterComponent.h"
-#include "../Components/RigidBodyComponent.h"
-#include "../Components/SpriteComponent.h"
-#include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/KeyDownEvent.h"
@@ -27,19 +18,17 @@
 #include "../Systems/RenderHealthSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/RenderTextSystem.h"
-#include "glm/fwd.hpp"
+#include "LevelLoader.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_ttf.h>
-#include <fstream>
 #include <glm/glm.hpp>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_sdl.h>
 #include <imgui/imgui_sdl.h>
 #include <memory>
-#include <sstream>
 #include <string>
 
 int Game::windowWidth;
@@ -130,58 +119,7 @@ void Game::ProcessInput() {
   }
 }
 
-// This is far from perfect and does not provide dynamic resolution scaling
-// TODO: Make this perfect and provide dynamic resolution scaling
-// TODO: Allow this to change/rerender based on settings change
-void Game::ReadMapFile(std::string filePath) {
-  // TODO: Ensure the file type is of the proper .map (csv) format that is
-  // expected
-
-  std::fstream file;
-
-  // TODO: Does this assign the string to the "file" var?
-  file.open(filePath.c_str());
-
-  std::string word, row;
-  double x = 0, y = 0;
-
-  // TODO: Find a better way to loop through this csv and build tiles, this is
-  // so bad
-  while (file >> row) {
-    std::stringstream stream(row);
-    while (std::getline(stream, word, ',')) {
-      int srcRectX, srcRectY;
-      int tileNum = std::stoi(word);
-
-      if (tileNum >= 20) {
-        srcRectY = 64;
-      } else if (tileNum >= 10) {
-        srcRectY = 32;
-      } else {
-        srcRectY = 0;
-      }
-
-      srcRectX = (tileNum % 10) * 32;
-
-      Entity mapTile = registry->CreateEntity();
-
-      // Scale to 1080p (THE DUMB AND UGLY WAY)
-      mapTile.AddComponent<TransformComponent>(glm::vec2(x * 2.56, y * 1.78),
-                                               glm::vec2(2.6, 1.8), 0.0);
-      mapTile.AddComponent<SpriteComponent>("jungle-map", 32, 32, 0, srcRectX,
-                                            srcRectY);
-      x = x + 32;
-      if (x >= 800) {
-        y = y + 32;
-        x = 0;
-      }
-    }
-  }
-}
-
-void Game::LoadLevel(int levelNumber) {
-
-  // Add the sytems that need to be processed in our game
+void Game::Setup() {
   registry->AddSystem<MovementSystem>();
   registry->AddSystem<RenderCircleColliderSystem>();
   registry->AddSystem<RenderSystem>();
@@ -198,99 +136,9 @@ void Game::LoadLevel(int levelNumber) {
   registry->AddSystem<RenderHealthSystem>();
   registry->AddSystem<RenderGUISystem>();
 
-  // Adding assets to the asset store
-  assetStore->AddTexture(renderer, "tank-image",
-                         "./assets/images/tank-panther-right.png");
-  assetStore->AddTexture(renderer, "truck-image",
-                         "./assets/images/truck-ford-right.png");
-  assetStore->AddTexture(renderer, "chopper-image",
-                         "./assets/images/chopper-spritesheet.png");
-  assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
-  assetStore->AddTexture(renderer, "bullet-image",
-                         "./assets/images/bullet.png");
-  assetStore->AddTexture(renderer, "tilemap-image",
-                         "./assets/tilemaps/jungle.png");
-  assetStore->AddFont("charriot-font", "./assets/fonts/charriot.ttf", 14);
-
-  // Load the tilemap
-  int tileSize = 32;
-  double tileScale = 2.5;
-  int mapNumCols = 25;
-  int mapNumRows = 20;
-
-  std::fstream mapFile;
-  mapFile.open("./assets/tilemaps/jungle.map");
-
-  for (int y = 0; y < mapNumRows; y++) {
-    for (int x = 0; x < mapNumCols; x++) {
-      char ch;
-      mapFile.get(ch);
-      int srcRectY = std::atoi(&ch) * tileSize;
-      mapFile.get(ch);
-      int srcRectX = std::atoi(&ch) * tileSize;
-      mapFile.ignore();
-
-      Entity tile = registry->CreateEntity();
-      tile.Group("tiles");
-      tile.AddComponent<TransformComponent>(
-          glm::vec2(x * (tileScale * tileSize), y * (tileScale * tileSize)),
-          glm::vec2(tileScale, tileScale), 0.0);
-      tile.AddComponent<SpriteComponent>("tilemap-image", tileSize, tileSize, 0,
-                                         false, srcRectX, srcRectY);
-    }
-  }
-  mapFile.close();
-  mapWidth = mapNumCols * tileSize * tileScale;
-  mapHeight = mapNumRows * tileSize * tileScale;
-
-  // Create an entity
-  Entity chopper = registry->CreateEntity();
-  chopper.Tag("player");
-  chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 100.0),
-                                           glm::vec2(1.0, 1.0), 0.0);
-  chopper.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
-  chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 1);
-  chopper.AddComponent<AnimationComponent>(2, 15, true);
-  chopper.AddComponent<BoxColliderComponent>(32, 32);
-  chopper.AddComponent<KeyboardControlledComponent>(
-      glm::vec2(0, -200), glm::vec2(200, 0), glm::vec2(0, 200),
-      glm::vec2(-200, 0));
-  chopper.AddComponent<CameraFollowComponent>();
-  chopper.AddComponent<HealthComponent>(100);
-  chopper.AddComponent<ProjectileEmitterComponent>(glm::vec2(350.0, 350.0), 0,
-                                                   10000, 25, true);
-
-  Entity radar = registry->CreateEntity();
-  radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 74, 10.0),
-                                         glm::vec2(1.0, 1.0), 0.0);
-  radar.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
-  radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 1, true);
-  radar.AddComponent<AnimationComponent>(8, 5, true);
-
-  Entity tank = registry->CreateEntity();
-  tank.Group("enemies");
-  tank.AddComponent<TransformComponent>(glm::vec2(500.0, 10.0),
-                                        glm::vec2(1.0, 1.0), 0.0);
-  tank.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
-  tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 1);
-  tank.AddComponent<BoxColliderComponent>(32, 32);
-  tank.AddComponent<ProjectileEmitterComponent>(glm::vec2(100.0, 0.0), 5000,
-                                                3000, 25, false);
-  tank.AddComponent<HealthComponent>(100);
-
-  Entity truck = registry->CreateEntity();
-  truck.Group("enemies");
-  truck.AddComponent<TransformComponent>(glm::vec2(10.0, 10.0),
-                                         glm::vec2(1.0, 1.0), 0.0);
-  truck.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
-  truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 2);
-  truck.AddComponent<BoxColliderComponent>(32, 32);
-  truck.AddComponent<ProjectileEmitterComponent>(glm::vec2(0.0, 100.0), 2000,
-                                                 3000, 25, false);
-  truck.AddComponent<HealthComponent>(100);
+  LevelLoader loader;
+  loader.LoadLevel(registry, assetStore, renderer, 1);
 }
-
-void Game::Setup() { LoadLevel(1); }
 
 void Game::Update() {
   // If we are too fast, waste some time until we reach the MILLISECS_PER_FRAME
