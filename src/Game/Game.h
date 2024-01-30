@@ -4,6 +4,7 @@
 #include "../AssetStore/AssetStore.h"
 #include "../ECS/ECS.h"
 #include "../EventManager/EventManager.h"
+#include "sol/sol.hpp"
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 #include <memory>
@@ -19,6 +20,8 @@ private:
   SDL_Window* window;
   SDL_Renderer* renderer;
   SDL_Rect camera;
+
+  sol::state lua;
 
   std::unique_ptr<Registry> registry;
   std::unique_ptr<AssetStore> assetStore;

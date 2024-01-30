@@ -33,7 +33,7 @@ public:
       static float projectileSpeed = 100.0;
       static int projectileRepeat = 0;
       static int projectileDuration = 0;
-      const char* spriteArray[] = {"tank-image", "truck-image"};
+      const char* spriteArray[] = {"tank-texture", "truck-texture"};
       static int selectedSpriteIndex = 0;
 
       if (ImGui::CollapsingHeader("Sprite Image",
