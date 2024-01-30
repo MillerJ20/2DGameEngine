@@ -14,14 +14,14 @@ const int MILLISECONDS_PER_FRAME = 1000 / FPS;
 
 class Game {
 private:
+  sol::state lua;
+
   bool isRunning;
   bool isDebug;
   int msPreviousFrame = 0;
   SDL_Window* window;
   SDL_Renderer* renderer;
   SDL_Rect camera;
-
-  sol::state lua;
 
   std::unique_ptr<Registry> registry;
   std::unique_ptr<AssetStore> assetStore;

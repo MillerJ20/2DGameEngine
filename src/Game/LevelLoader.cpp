@@ -6,6 +6,7 @@
 #include "../Components/KeyboardControlledComponent.h"
 #include "../Components/ProjectileEmitterComponent.h"
 #include "../Components/RigidBodyComponent.h"
+#include "../Components/ScriptComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../Game/Game.h"
@@ -241,6 +242,13 @@ void LevelLoader::LoadLevel(sol::state& lua,
                             ["left_velocity"]["y"]));
       }
     }
+
+    sol::optional<sol::table> script = entity["components"]["on_update_script"];
+    if (script != sol::nullopt) {
+      sol::function func = entity["components"]["on_update_script"][0];
+      newEntity.AddComponent<ScriptComponent>(func);
+    }
+
     i++;
   }
 }
