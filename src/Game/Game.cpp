@@ -72,17 +72,13 @@ void Game::Initialize() {
     Logger::Err("Error creating SDL renderer.");
     return;
   }
-  SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
   // Initialize imgui context
   ImGui::CreateContext();
   ImGuiSDL::Initialize(renderer, windowWidth, windowHeight);
 
   // Initialize the camera
-  camera.x = 0;
-  camera.y = 0;
-  camera.w = windowWidth;
-  camera.h = windowHeight;
+  camera = {0, 0, windowWidth, windowHeight};
 
   isRunning = true;
 }
@@ -121,11 +117,9 @@ void Game::ProcessInput() {
 
 void Game::Setup() {
   registry->AddSystem<MovementSystem>();
-  registry->AddSystem<RenderCircleColliderSystem>();
   registry->AddSystem<RenderSystem>();
   registry->AddSystem<AnimationSystem>();
   registry->AddSystem<CollisionSystem>();
-  registry->AddSystem<CircleCollisionSystem>();
   registry->AddSystem<RenderColliderSystem>();
   registry->AddSystem<DamageSystem>();
   registry->AddSystem<KeyboardControlSystem>();
@@ -138,7 +132,7 @@ void Game::Setup() {
 
   LevelLoader loader;
   lua.open_libraries(sol::lib::base, sol::lib::math);
-  loader.LoadLevel(lua, registry, assetStore, renderer, 1);
+  loader.LoadLevel(lua, registry, assetStore, renderer, 2);
 }
 
 void Game::Update() {
@@ -157,6 +151,7 @@ void Game::Update() {
   eventManager->Reset();
 
   // Subscribe to events
+  registry->GetSystem<MovementSystem>().SubscribeToEvents(eventManager);
   registry->GetSystem<DamageSystem>().SubscribeToEvents(eventManager);
   registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(eventManager);
   registry->GetSystem<ProjectileEmitSystem>().SubscribeToEvent(eventManager);
@@ -169,9 +164,8 @@ void Game::Update() {
   registry->GetSystem<MovementSystem>().Update(deltaTime);
   registry->GetSystem<AnimationSystem>().Update();
   registry->GetSystem<CollisionSystem>().Update(eventManager);
-  registry->GetSystem<CircleCollisionSystem>().Update(eventManager);
-  registry->GetSystem<CameraMovementSystem>().Update(camera);
   registry->GetSystem<ProjectileEmitSystem>().Update(registry);
+  registry->GetSystem<CameraMovementSystem>().Update(camera);
   registry->GetSystem<ProjectileLifecycleSystem>().Update();
 }
 
@@ -180,14 +174,13 @@ void Game::Render() {
   SDL_RenderClear(renderer);
 
   registry->GetSystem<RenderSystem>().Update(renderer, assetStore, camera);
+  registry->GetSystem<RenderTextSystem>().Update(renderer, assetStore, camera);
   registry->GetSystem<RenderHealthSystem>().Update(renderer, assetStore,
                                                    camera);
-  registry->GetSystem<RenderTextSystem>().Update(renderer, assetStore, camera);
+
   if (isDebug) {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     registry->GetSystem<RenderColliderSystem>().Update(renderer, camera);
-    registry->GetSystem<RenderCircleColliderSystem>().Update(renderer, camera);
-
     registry->GetSystem<RenderGUISystem>().Update(registry, camera);
   }
 

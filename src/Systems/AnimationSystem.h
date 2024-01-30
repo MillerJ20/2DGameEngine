@@ -19,7 +19,7 @@ public:
       auto& sprite = entity.GetComponent<SpriteComponent>();
 
       animation.currentFrame = ((SDL_GetTicks() - animation.startTime) *
-                                animation.frameRateSpeed / 1000) %
+                                animation.frameSpeedRate / 1000) %
                                animation.numFrames;
       // Change srcRect of the sprite
       sprite.srcRect.x = animation.currentFrame * sprite.width;

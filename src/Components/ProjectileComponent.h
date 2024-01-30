@@ -6,8 +6,8 @@
 struct ProjectileComponent {
   bool isFriendly;
   int hitPercentDamage;
-  unsigned int duration;
-  unsigned int startTime;
+  int duration;
+  int startTime;
 
   ProjectileComponent(bool isFriendly = false, int hitPercentDamage = 0,
                       int duration = 0) {

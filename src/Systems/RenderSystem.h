@@ -66,7 +66,7 @@ public:
     // Sort entities by z_index (Could be refactored to sort on entity creation)
     std::sort(renderableEntities.begin(), renderableEntities.end(),
               [](const RenderableEntity a, const RenderableEntity b) {
-                return a.spriteComponent.z_index < b.spriteComponent.z_index;
+                return a.spriteComponent.zIndex < b.spriteComponent.zIndex;
               });
 
     for (auto entity : renderableEntities) {
@@ -83,7 +83,7 @@ public:
 
       SDL_RenderCopyEx(renderer, assetStore->GetTexture(sprite.assetId),
                        &srcRect, &dstRect, transform.rotation, NULL,
-                       SDL_FLIP_NONE);
+                       sprite.flip);
     }
   }
 };

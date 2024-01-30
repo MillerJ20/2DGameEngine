@@ -41,7 +41,12 @@ public:
   void OnProjectileHitPlayer(Entity projectile, Entity player) {
     auto projectileComponent = projectile.GetComponent<ProjectileComponent>();
 
-    if (!projectileComponent.isFriendly) {
+    if (!projectileComponent.isFriendly &&
+        player.HasComponent<HealthComponent>()) {
+      Logger::Log(
+          "Projectile id: " + std::to_string(projectile.GetId()) +
+          " collided with player id: " + std::to_string(player.GetId()));
+
       auto& healthComponent = player.GetComponent<HealthComponent>();
 
       healthComponent.healthPercentage -= projectileComponent.hitPercentDamage;
@@ -57,7 +62,11 @@ public:
   void OnProjectileHitEnemy(Entity projectile, Entity enemy) {
     auto projectileComponent = projectile.GetComponent<ProjectileComponent>();
 
-    if (projectileComponent.isFriendly) {
+    if (projectileComponent.isFriendly &&
+        enemy.HasComponent<HealthComponent>()) {
+      Logger::Log("Projectile id: " + std::to_string(projectile.GetId()) +
+                  " collided with enemy id: " + std::to_string(enemy.GetId()));
+
       auto& healthComponent = enemy.GetComponent<HealthComponent>();
 
       healthComponent.healthPercentage -= projectileComponent.hitPercentDamage;
